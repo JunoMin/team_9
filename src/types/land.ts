@@ -25,4 +25,22 @@ export interface Land {
   purpose: string
   areaM2: number
   priceWon: number
+  // 아래는 실제 LH 데이터에만 있는 선택 필드입니다. 예시 데이터에는 없습니다.
+  source?: LandSource
+  regionName?: string
+  useName?: string
+  address?: string
+  lotNo?: string
+  status?: string
+  saleMethod?: SaleMethod
+  noticeId?: string
+  noticeName?: string
+  closesOn?: string
+  detailUrl?: string
+  contactPhone?: string
 }
+
+export type LandSource = 'lh-notice' | 'lh-suui'
+
+// 입찰은 예정가격, 추첨·수의계약은 공급가격을 priceWon으로 씁니다.
+export type SaleMethod = '입찰' | '추첨' | '수의계약'
