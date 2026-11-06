@@ -1,0 +1,68 @@
+.land-regulations {
+  flex-basis: 100%;
+  min-width: 0;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+
+.regulations-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.regulations-heading h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.regulations-heading > span {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #f5f6f3;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.regulations-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 24px;
+}
+
+.regulations-grid > div {
+  min-width: 0;
+}
+
+.regulations-grid dt {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.regulations-grid dd {
+  color: #586e5c;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.regulations-note {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.8;
+}
+
+@media (max-width: 600px) {
+  .land-regulations {
+    flex-basis: auto;
+  }
+
+  .regulations-grid {
+    gap: 16px;
+  }
+}

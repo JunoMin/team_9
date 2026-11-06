@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { dateStamp, downloadFile } from '../lib/download'
 import { formatPrice, labelFor, pricePerM2, sortLands, toCsv, type SortOrder } from '../lib/search'
 import type { Land } from '../types/land'
+import { LandRegulations } from './LandRegulations'
 
 const PAGE_SIZE = 20
 
@@ -107,6 +108,7 @@ export function Results({ lands, selectedIds, onToggle, onEdit }: Props) {
                   <dd className="price">{formatPrice(land.priceWon)}</dd>
                 </div>
               </dl>
+              <LandRegulations />
             </li>
           )
         })}
