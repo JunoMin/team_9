@@ -4,3 +4,4 @@ pnpm-lock.yaml
 src/data/*.generated.ts
 guidelines/TARGETS.md
 guidelines/files
+public/landtrade-radius.html

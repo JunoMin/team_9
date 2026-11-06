@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>우리땅 · 토지 실거래가 반경 조회</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='11' fill='%23216449'/%3E%3Cpath d='M9 18 18 10l9 8M12 16v11h12V16M16 27v-7h4v7' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+ /* 9조 UI 템플릿(JunoMin/team_9 src/index.css)의 색·글꼴·카드 스타일을 따른다 */
+ :root{font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#263b31;background:#f7f8f5;
+  -webkit-font-smoothing:antialiased;--green:#216449;--muted:#737e77;--border:#e3e8e1}
+ *{box-sizing:border-box}
+ body{margin:0;min-width:320px;background:#f7f8f5}
+ button,input,select{font:inherit}
+ button{cursor:pointer;color:inherit}
+ button:disabled{cursor:not-allowed}
+ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #377e61;outline-offset:4px}
+ h1,h2,h3,p,ol,ul,dl,dd{margin:0}
+ .site-header{background:#fff;border-bottom:1px solid var(--border)}
+ .header-inner,.page-shell,.site-footer{max-width:1160px;margin-left:auto;margin-right:auto}
+ .header-inner{height:88px;display:flex;justify-content:space-between;align-items:center}
+ .brand{display:inline-flex;gap:10px;align-items:center;font-size:24px;font-weight:800;letter-spacing:-1.5px}
+ .brand svg,.brand-dot{color:var(--green)}
+ .header-meta{display:flex;align-items:center;gap:24px;color:var(--muted);font-size:12px}
+ .template-badge{padding:6px 12px;border:1px solid var(--border);border-radius:6px;font-weight:600;font-size:11px;color:#59675d}
+ .hero{padding:58px 0 38px}
+ .eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:12px;font-weight:600;color:var(--green)}
+ .eyebrow span{width:6px;height:6px;border-radius:50%;background:#538d6b}
+ .hero h1{font-size:clamp(26px,3vw,36px);font-weight:700;letter-spacing:-1.5px;line-height:1.5}
+ .hero h1 span{color:var(--green)}
+ .hero>p:last-child{margin-top:10px;color:var(--muted);font-size:14px}
+ .workspace{display:grid;grid-template-columns:minmax(0,1fr) 288px;gap:24px;align-items:start}
+ .panel{min-width:0;background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 4px 20px #1b432605}
+ .search-content{padding:36px 38px 28px}
+ .step-caption{display:flex;justify-content:space-between;align-items:center;color:var(--green);font-size:10px;font-weight:700;letter-spacing:1.2px}
+ .step-caption span{color:#7d8981;font-size:11px;letter-spacing:0;font-weight:400}
+ .question-heading h2{margin-top:14px;font-size:23px;font-weight:700;line-height:1.5;letter-spacing:-.8px}
+ .question-heading>p:last-child{margin-top:8px;color:var(--muted);font-size:13px;line-height:1.7}
+ .field-label{display:block;margin:28px 0 8px;font-size:12px;font-weight:600;color:#54685a}
+ .text-input{width:100%;min-height:52px;padding:12px 16px;border:1px solid #dfe5dd;border-radius:10px;font-size:15px;color:#263b31;background:#fff}
+ .text-input:hover{border-color:#8cad98}
+ .text-input:focus{border-color:var(--green);box-shadow:inset 0 0 0 1px var(--green);outline:none}
+ .choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:0;border:0;margin:0;min-width:0}
+ .choice{display:flex;position:relative;align-items:center;justify-content:space-between;gap:10px;min-height:84px;padding:18px 20px;
+  border:1px solid #dfe5dd;border-radius:10px;cursor:pointer;transition:border-color 150ms,background 150ms}
+ .choice:hover{border-color:#8cad98;background:#fafcf9}
+ .choice:has(input:checked){border-color:var(--green);background:#f0f6ee;box-shadow:inset 0 0 0 1px var(--green)}
+ .choice:has(input:focus-visible){outline:3px solid #377e61;outline-offset:4px}
+ .choice input{position:absolute;width:1px;height:1px;opacity:0}
+ .choice-text{display:flex;flex-direction:column;gap:6px;min-width:0}
+ .choice-text strong{font-size:15px;font-weight:600;letter-spacing:-.3px}
+ .choice-text>span{color:#758178;font-size:11px;line-height:1.5}
+ .radio-mark{width:19px;height:19px;border:1.5px solid #d2dcd0;border-radius:50%;flex-shrink:0;background:#fff}
+ .choice:has(input:checked) .radio-mark{border:5px solid var(--green)}
+ .key-box{margin-top:24px;border:1px solid #edf0ea;border-radius:10px;padding:14px 16px;background:#fbfcfa}
+ .key-box summary{cursor:pointer;font-size:12px;font-weight:600;color:#54685a}
+ .keys{display:grid;grid-template-columns:120px 1fr;gap:8px 12px;align-items:center;margin-top:12px;font-size:12px;color:var(--muted)}
+ .keys input{min-height:40px;padding:8px 12px;border:1px solid #dfe5dd;border-radius:7px;font-size:13px;width:100%}
+ .form-actions{display:flex;justify-content:space-between;align-items:center;gap:16px;border-top:1px solid #edf0ea;padding-top:22px;margin-top:28px}
+ .selection-hint{color:#7e8880;font-size:11px;line-height:1.6}
+ .selection-hint.err{color:#b3261e;font-weight:600}
+ .button{display:inline-flex;align-items:center;justify-content:center;gap:30px;min-height:46px;padding:10px 23px;border-radius:8px;border:1px solid transparent;font-size:13px;font-weight:600;white-space:nowrap}
+ .primary{background:var(--green);color:#fff;min-width:132px}
+ .primary:hover:not(:disabled){background:#194e38}
+ .primary:disabled{background:#e9ede6;color:#7a8378}
+ .secondary{border-color:#ccd7cb;background:#fff;color:#263b31}
+ .secondary:hover{background:#f0f6ee}
+ .summary-panel{padding:27px 24px 23px}
+ .summary-heading{display:flex;align-items:center;justify-content:space-between}
+ .summary-heading h2{font-size:15px;font-weight:600}
+ .summary-heading>span{font-size:12px;color:var(--green);font-weight:700}
+ .progress-track{height:3px;border-radius:2px;background:#edf1e9;margin-top:20px}
+ .progress-track>span{height:100%;width:0;display:block;background:#558368;border-radius:2px;transition:width 200ms}
+ .summary-list{padding:13px 0 18px}
+ .summary-list>div{display:grid;grid-template-columns:42px minmax(0,1fr);gap:8px;min-height:44px;align-items:center}
+ .summary-list dt{color:#7b877d;font-size:12px}
+ .summary-list dd{font-size:12px;min-width:0;color:var(--green);font-weight:600;overflow-wrap:anywhere}
+ .summary-list dd.unselected{color:#889188;font-weight:400}
+ .reset-button{width:100%;min-height:42px;border:1px solid #e4e9df;border-radius:7px;background:#fff;color:#647366;font-size:11px}
+ .reset-button:hover{background:#f5f7f2}
+ .summary-tip{margin-top:20px;text-align:center;font-size:11px;color:#7c887e;line-height:1.8}
+ .results{margin-top:28px;display:none}
+ .results-toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:0 0 15px;font-size:12px;color:#778379}
+ .results-toolbar strong{color:var(--green)}
+ .results-toolbar h2{font-size:20px;font-weight:700;letter-spacing:-.6px;color:#263b31}
+ .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+ .kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+ .kpi dt{font-size:11px;color:#7e8a7e}
+ .kpi dd{margin-top:8px;font-size:20px;font-weight:700;letter-spacing:-.5px;color:var(--green)}
+ .kpi dd small{font-size:11px;font-weight:400;color:#859081;margin-left:3px}
+ .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+ .card{padding:22px 24px}
+ .card h3{font-size:14px;font-weight:600;margin-bottom:14px}
+ #map{height:420px;border-radius:10px;border:1px solid var(--border)}
+ .chart{position:relative;height:250px}
+ .table-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+ .table-tools select{border:1px solid #dfe5db;border-radius:6px;padding:8px 10px;background:#fff;color:#54685a;font-size:12px}
+ .chk{font-size:12px;color:#54685a;display:flex;gap:5px;align-items:center}
+ .chk input{accent-color:var(--green)}
+ .scroll{max-height:440px;overflow:auto;border:1px solid var(--border);border-radius:10px}
+ table{border-collapse:collapse;width:100%;font-size:12px}
+ th,td{border-bottom:1px solid #edf0ea;padding:9px 10px;text-align:left;white-space:nowrap}
+ th{background:#f5f7f2;color:#54685a;font-weight:600;position:sticky;top:0;cursor:pointer}
+ tbody tr:hover td{background:#fafcf9}
+ td.r,th.r{text-align:right}
+ .tag{color:#b3261e;background:#fbeceb;border-radius:4px;padding:3px 6px;font-size:10px}
+ .demo-notice{display:flex;align-items:flex-start;gap:9px;padding:20px 4px;color:#7c887d;font-size:11px;line-height:1.8}
+ .demo-notice strong{color:#586e5c;font-weight:500;margin-right:4px}
+ .notice-symbol{width:15px;height:15px;border:1px solid #8d9a8e;border-radius:50%;font-size:10px;font-family:serif;display:grid;place-items:center;flex-shrink:0;margin-top:3px;line-height:1}
+ .site-footer{display:flex;align-items:center;justify-content:space-between;margin-top:40px;border-top:1px solid var(--border);padding:24px 0 30px;color:#839084;font-size:10px}
+ .site-footer>span{font-weight:600;letter-spacing:.7px}
+ @media(max-width:1240px){.header-inner,.page-shell,.site-footer{margin-left:32px;margin-right:32px}.workspace{grid-template-columns:minmax(0,1fr) 260px;gap:20px}.search-content{padding-left:28px;padding-right:28px}}
+ @media(max-width:920px){.workspace,.grid{grid-template-columns:minmax(0,1fr)}.summary-tip{display:none}.hero{padding-top:40px}}
+ @media(max-width:600px){.header-inner,.page-shell,.site-footer{margin-left:16px;margin-right:16px}.header-inner{height:72px}.brand{font-size:21px}
+  .header-meta>span:first-child{display:none}.hero{padding:30px 0 28px}.hero h1{font-size:26px}.search-content{padding:26px 20px 22px}
+  .question-heading h2{font-size:20px}.choice-grid{gap:8px}.choice{min-height:72px;padding:14px 12px}.choice-text strong{font-size:13px}
+  .keys{grid-template-columns:1fr}.form-actions{flex-direction:column;align-items:stretch}.card{padding:18px 16px}.panel{border-radius:14px}
+  .site-footer{flex-direction:column;align-items:flex-start;gap:8px}}
+</style>
+</head>
+<body>
+<header class="site-header">
+ <div class="header-inner">
+  <span class="brand">
+   <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true"><rect width="36" height="36" rx="11" fill="currentColor"/><path d="M9 18 18 10l9 8M12 16v11h12V16M16 27v-7h4v7" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   <span>우리땅<span class="brand-dot">.</span></span>
+  </span>
+  <div class="header-meta"><span>주소로 찾는 주변 땅값</span><span class="template-badge">실거래가 조회</span></div>
+ </div>
+</header>
+<main id="main" class="page-shell">
+ <section class="hero">
+  <p class="eyebrow"><span aria-hidden="true"></span> 주변 토지 실거래가</p>
+  <h1>이 땅 주변은,<br> <span>얼마에 거래됐을까요?</span></h1>
+  <p>주소 하나로 반경 안 최근 1년 토지 매매 실거래가를 모아 보여 드려요.</p>
+ </section>
+
+ <div class="workspace">
+  <section class="panel">
+   <form id="form" class="search-content">
+    <div class="question-heading">
+     <p class="step-caption">STEP 01<span>주소와 반경</span></p>
+     <h2>어느 땅 주변 시세가 궁금하세요?</h2>
+     <p>도로명 또는 지번 주소를 입력하고 살펴볼 반경을 골라 주세요.</p>
+    </div>
+    <label class="field-label" for="addr">주소</label>
+    <input class="text-input" type="text" id="addr" placeholder="예: 경기도 광명시 일직동 507" required>
+    <span class="field-label" id="radiusLabel">반경</span>
+    <fieldset class="choice-grid" aria-labelledby="radiusLabel">
+     <label class="choice"><input type="radio" name="radius" value="1"><span class="choice-text"><strong>1km</strong><span>바로 옆 동네</span></span><span class="radio-mark" aria-hidden="true"></span></label>
+     <label class="choice"><input type="radio" name="radius" value="3" checked><span class="choice-text"><strong>3km</strong><span>기본 범위</span></span><span class="radio-mark" aria-hidden="true"></span></label>
+     <label class="choice"><input type="radio" name="radius" value="5"><span class="choice-text"><strong>5km</strong><span>넓게 비교</span></span><span class="radio-mark" aria-hidden="true"></span></label>
+    </fieldset>
+    <details class="key-box" id="keyBox">
+     <summary>인증키 설정 · 이 브라우저에만 저장돼요</summary>
+     <div class="keys">
+      <label for="kData">공공데이터포털 키</label><input type="password" id="kData" placeholder="토지 매매 실거래가 자료 인증키">
+      <label for="kVworld">브이월드 키</label><input type="password" id="kVworld" placeholder="지오코더·2D데이터 API 인증키">
+     </div>
+    </details>
+    <div class="form-actions">
+     <span class="selection-hint" id="status" role="status">최근 12개월 계약 건을 조회합니다.</span>
+     <button class="button primary" id="go">실거래가 조회 <span aria-hidden="true">→</span></button>
+    </div>
+   </form>
+  </section>
+
+  <aside class="panel summary-panel" aria-labelledby="summaryTitle">
+   <div class="summary-heading"><h2 id="summaryTitle">조회 조건</h2><span id="sumPct">0<span style="color:#8a958d;font-weight:400">%</span></span></div>
+   <div class="progress-track" aria-hidden="true"><span id="progress"></span></div>
+   <dl class="summary-list">
+    <div><dt>주소</dt><dd id="sAddr" class="unselected">입력 전</dd></div>
+    <div><dt>반경</dt><dd id="sRadius">3km</dd></div>
+    <div><dt>기간</dt><dd id="sPeriod"></dd></div>
+    <div><dt>범위</dt><dd id="sArea" class="unselected">조회 전</dd></div>
+   </dl>
+   <button type="button" class="reset-button" id="reset">↺ 조건 초기화</button>
+   <p class="summary-tip">거래 위치는 읍면동 단위로<br>계산한 추정 거리예요.</p>
+  </aside>
+ </div>
+
+ <section class="results" id="result" aria-labelledby="resultTitle">
+  <div class="results-toolbar">
+   <h2 id="resultTitle">주변 실거래가 요약</h2>
+   <p id="resultMeta"></p>
+  </div>
+  <dl class="kpis" id="kpis"></dl>
+  <div class="grid">
+   <div class="panel card">
+    <h3>조회 위치와 반경 안 읍면동</h3>
+    <div id="map"></div>
+   </div>
+   <div class="panel card">
+    <h3>월별 거래 건수와 ㎡당 단가 중앙값</h3>
+    <div class="chart"><canvas id="cMonth"></canvas></div>
+    <h3 style="margin-top:18px">지목별 ㎡당 단가 중앙값</h3>
+    <div class="chart" style="height:190px"><canvas id="cJimok"></canvas></div>
+   </div>
+  </div>
+  <div class="panel card" style="margin-bottom:16px">
+   <h3>읍면동별 요약</h3>
+   <div class="scroll" style="max-height:260px"><table id="emdTable"></table></div>
+  </div>
+  <div class="panel card">
+   <div class="results-toolbar" style="flex-wrap:wrap">
+    <p>거래 목록 <strong id="cnt"></strong></p>
+    <div class="table-tools">
+     <select id="fJimok" aria-label="지목 필터"></select>
+     <select id="fUse" aria-label="용도지역 필터"></select>
+     <label class="chk"><input type="checkbox" id="fShare" checked>지분거래 제외</label>
+     <label class="chk"><input type="checkbox" id="fCancel" checked>해제된 거래 제외</label>
+     <button class="button secondary" id="xlsx" type="button" style="min-height:38px;padding:8px 16px">엑셀 다운로드 ↓</button>
+    </div>
+   </div>
+   <div class="scroll"><table id="tradeTable"></table></div>
+  </div>
+ </section>
+
+ <div class="demo-notice">
+  <span class="notice-symbol" aria-hidden="true">i</span>
+  <p id="caveat"><strong>참고용 자료예요.</strong> 국토교통부 토지 매매 실거래가는 지번 일부가 가려져 있어, 반경에 일부라도 걸친 읍면동의 거래를 모두 포함하고 거리는 읍면동 중심까지로 추정합니다.</p>
+ </div>
+</main>
+<footer class="site-footer">
+ <span>TEAM 09 · 우리땅</span>
+ <p>출처: 국토교통부 토지 매매 실거래가 자료(공공데이터포털) · 브이월드</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const TRADE_API = 'https://apis.data.go.kr/1613000/RTMSDataSvcLandTrade/getRTMSDataSvcLandTrade';
+const MONTHS = 12;
+const $ = id => document.getElementById(id);
+const store = {
+  get(k){ try { return localStorage.getItem(k) || ''; } catch(e){ return ''; } },
+  set(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
+};
+const fmt = n => n == null || isNaN(n) ? '-' : Math.round(n).toLocaleString('ko-KR');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const median = a => { if(!a.length) return null; const s=[...a].sort((x,y)=>x-y), m=s.length>>1; return s.length%2 ? s[m] : (s[m-1]+s[m])/2; };
+const mean = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : null;
+
+let state = null, map, layers, charts = {}, sortKey = 'date', sortDir = -1;
+
+function setStatus(msg, err){ $('status').textContent = msg; $('status').className = 'selection-hint' + (err ? ' err' : ''); }
+function setProgress(pct){
+  $('progress').style.width = pct + '%';
+  $('sumPct').firstChild.textContent = Math.round(pct);
+}
+function summarize(){
+  const m = recentMonths(), addr = $('addr').value.trim();
+  $('sAddr').textContent = (state && state.addr === addr ? state.p.text : addr) || '입력 전';
+  $('sAddr').className = addr ? '' : 'unselected';
+  $('sRadius').textContent = radius() + 'km';
+  $('sPeriod').textContent = `${m[0].slice(0,4)}.${m[0].slice(4)} ~ ${m[11].slice(0,4)}.${m[11].slice(4)}`;
+}
+const radius = () => +document.querySelector('input[name=radius]:checked').value;
+
+// 브이월드는 브라우저에서 JSONP로 호출한다
+function jsonp(url){
+  return new Promise((resolve, reject) => {
+    const cb = 'vw' + Date.now() + Math.floor(Math.random()*1e6);
+    const s = document.createElement('script');
+    const timer = setTimeout(() => { clean(); reject(new Error('브이월드 응답 시간 초과')); }, 15000);
+    function clean(){ clearTimeout(timer); delete window[cb]; s.remove(); }
+    window[cb] = d => { clean(); resolve(d); };
+    s.onerror = () => { clean(); reject(new Error('브이월드 호출 실패 (인증키·등록 도메인을 확인해 주세요)')); };
+    s.src = url + '&callback=' + cb;
+    document.head.appendChild(s);
+  });
+}
+
+async function geocode(addr, key){
+  for(const type of ['ROAD','PARCEL']){
+    const d = await jsonp('https://api.vworld.kr/req/address?service=address&request=getcoord&version=2.0&crs=epsg:4326'
+      + '&refine=true&simple=false&format=json&type=' + type + '&address=' + encodeURIComponent(addr) + '&key=' + encodeURIComponent(key));
+    const r = d.response;
+    if(r.status === 'OK') return { lat:+r.result.point.y, lng:+r.result.point.x, text:(r.refined && r.refined.text) || addr };
+    if(r.status === 'ERROR') throw new Error('브이월드 주소 검색 오류: ' + ((r.error && r.error.text) || ''));
+  }
+  throw new Error('주소를 찾지 못했습니다. 도로명 또는 지번 주소를 정확히 입력해 주세요.');
+}
+
+// 조회 지점 기준 km 단위 평면 좌표 (반경 수 km에서는 오차가 무시할 만하다)
+function projector(p){
+  const kx = 111.32 * Math.cos(p.lat*Math.PI/180), ky = 110.57;
+  return ([lng,lat]) => [(lng-p.lng)*kx, (lat-p.lat)*ky];
+}
+function outerRings(g){
+  if(g.type === 'Polygon') return [g.coordinates[0]];
+  if(g.type === 'MultiPolygon') return g.coordinates.map(pg => pg[0]);
+  return [];
+}
+function inside(pt, ring){
+  let c = false;
+  for(let i=0, j=ring.length-1; i<ring.length; j=i++){
+    const [xi,yi]=ring[i], [xj,yj]=ring[j];
+    if((yi>pt[1]) !== (yj>pt[1]) && pt[0] < (xj-xi)*(pt[1]-yi)/(yj-yi)+xi) c = !c;
+  }
+  return c;
+}
+function segDist([px,py],[ax,ay],[bx,by]){
+  const dx=bx-ax, dy=by-ay, L=dx*dx+dy*dy;
+  const t = L ? Math.max(0, Math.min(1, ((px-ax)*dx+(py-ay)*dy)/L)) : 0;
+  return Math.hypot(px-ax-t*dx, py-ay-t*dy);
+}
+function ringCentroid(ring){
+  let a=0, cx=0, cy=0;
+  for(let i=0, j=ring.length-1; i<ring.length; j=i++){
+    const f = ring[j][0]*ring[i][1] - ring[i][0]*ring[j][1];
+    a += f; cx += (ring[j][0]+ring[i][0])*f; cy += (ring[j][1]+ring[i][1])*f;
+  }
+  return a ? { c:[cx/(3*a), cy/(3*a)], area:Math.abs(a/2) } : { c:ring[0], area:0 };
+}
+
+// 반경에 조금이라도 걸치는 읍면동(법정동)을 브이월드 경계 데이터에서 찾는다
+async function emdsNear(p, rKm, key){
+  const dLat = rKm/110.57, dLng = rKm/(111.32*Math.cos(p.lat*Math.PI/180));
+  const box = `BOX(${p.lng-dLng},${p.lat-dLat},${p.lng+dLng},${p.lat+dLat})`;
+  const d = await jsonp('https://api.vworld.kr/req/data?service=data&request=GetFeature&version=2.0&data=LT_C_ADEMD_INFO'
+    + '&format=json&size=1000&page=1&geometry=true&attribute=true&crs=EPSG:4326&geomFilter=' + box + '&key=' + encodeURIComponent(key));
+  const r = d.response;
+  if(r.status === 'NOT_FOUND') return [];
+  if(r.status !== 'OK') throw new Error('브이월드 읍면동 경계 조회 오류: ' + ((r.error && r.error.text) || r.status));
+  const proj = projector(p);
+  return r.result.featureCollection.features.map(f => {
+    const rings = outerRings(f.geometry), pr = rings.map(rg => rg.map(proj));
+    const dist = pr.some(rg => inside([0,0], rg)) ? 0
+      : Math.min(...pr.flatMap(rg => rg.slice(1).map((b,i) => segDist([0,0], rg[i], b))));
+    const big = pr.map(ringCentroid).sort((a,b) => b.area-a.area)[0];
+    const props = f.properties;
+    return { code:props.emd_cd, sgg:props.emd_cd.slice(0,5), name:props.emd_kor_nm, full:props.full_nm,
+      dist, cDist:Math.hypot(...big.c), rings };
+  }).filter(e => e.dist <= rKm);
+}
+
+function recentMonths(){
+  const now = new Date(), out = [];
+  for(let i=0; i<MONTHS; i++){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    out.push(d.getFullYear() + String(d.getMonth()+1).padStart(2,'0'));
+  }
+  return out.reverse();
+}
+
+async function fetchTrades(sgg, ymd, key){
+  const k = key.includes('%') ? key : encodeURIComponent(key);
+  const all = [];
+  for(let page=1; ; page++){
+    const res = await fetch(`${TRADE_API}?serviceKey=${k}&LAWD_CD=${sgg}&DEAL_YMD=${ymd}&pageNo=${page}&numOfRows=1000`);
+    const text = await res.text();
+    const x = new DOMParser().parseFromString(text, 'text/xml');
+    const code = x.querySelector('resultCode')?.textContent;
+    if(code !== '000' && code !== '00'){
+      const msg = x.querySelector('resultMsg')?.textContent || x.querySelector('returnAuthMsg')?.textContent || text.slice(0,120);
+      throw new Error('실거래가 API 오류: ' + msg);
+    }
+    const items = [...x.querySelectorAll('item')].map(it => {
+      const g = n => (it.querySelector(n)?.textContent || '').trim();
+      const area = +g('dealArea').replace(/,/g,''), amount = +g('dealAmount').replace(/,/g,'');
+      return {
+        date: `${g('dealYear')}-${g('dealMonth').padStart(2,'0')}-${g('dealDay').padStart(2,'0')}`,
+        ym: g('dealYear') + g('dealMonth').padStart(2,'0'),
+        sgg: g('sggCd'), sggNm: g('sggNm'), umd: g('umdNm'), jibun: g('jibun'),
+        jimok: g('jimok'), use: g('landUse'), area, amount,
+        unit: area > 0 ? amount*10000/area : null,
+        gbn: g('dealingGbn'), share: g('shareDealingType'), cancel: g('cdealType') === 'O', cancelDay: g('cdealDay')
+      };
+    });
+    all.push(...items);
+    const total = +(x.querySelector('totalCount')?.textContent || 0);
+    if(all.length >= total || !items.length) return all;
+  }
+}
+
+async function pool(tasks, n, onDone){
+  const out = []; let i = 0;
+  await Promise.all(Array.from({length:n}, async () => {
+    while(i < tasks.length){ const k = i++; out[k] = await tasks[k](); onDone(); }
+  }));
+  return out;
+}
+
+async function search(e){
+  e.preventDefault();
+  const addr = $('addr').value.trim(), rKm = radius();
+  const kData = $('kData').value.trim(), kVw = $('kVworld').value.trim();
+  store.set('kData', kData); store.set('kVworld', kVw);
+  if(!kData || !kVw){ $('keyBox').open = true; return setStatus('공공데이터포털 키와 브이월드 키를 모두 입력해 주세요.', true); }
+  $('go').disabled = true;
+  try{
+    setProgress(5);
+    setStatus('주소 위치를 찾는 중…');
+    const p = await geocode(addr, kVw);
+    setProgress(10);
+    setStatus(`반경 ${rKm}km 안의 읍면동을 찾는 중…`);
+    const emds = await emdsNear(p, rKm, kVw);
+    if(!emds.length) throw new Error('반경 안에서 읍면동을 찾지 못했습니다.');
+    const sggs = [...new Set(emds.map(e => e.sgg))], months = recentMonths();
+    const jobs = sggs.flatMap(s => months.map(m => () => fetchTrades(s, m, kData)));
+    let done = 0;
+    setProgress(15);
+    setStatus(`실거래가 조회 중… 0/${jobs.length}`);
+    const res = await pool(jobs, 4, () => { done++; setProgress(15 + 85*done/jobs.length); setStatus(`실거래가 조회 중… ${done}/${jobs.length}`); });
+    const byKey = new Map(emds.map(e => [e.sgg + '|' + e.name, e]));
+    const trades = res.flat().map(t => {
+      const emd = byKey.get(t.sgg + '|' + t.umd.split(' ')[0]);
+      return emd ? { ...t, emd, dist: emd.cDist } : null;
+    }).filter(Boolean);
+    state = { addr, p, rKm, emds, sggs, months, trades, at: new Date() };
+    fillFilters();
+    render();
+    setStatus(`조회 완료 · API ${jobs.length}회 호출`);
+    $('result').scrollIntoView({ behavior:'smooth' });
+  }catch(err){
+    setProgress(0);
+    setStatus(err.message, true);
+  }finally{
+    $('go').disabled = false;
+  }
+}
+
+function fillFilters(){
+  const opts = (key, label) => `<option value="">${label} 전체</option>` +
+    [...new Set(state.trades.map(t => t[key]).filter(Boolean))].sort().map(v => `<option>${esc(v)}</option>`).join('');
+  $('fJimok').innerHTML = opts('jimok', '지목');
+  $('fUse').innerHTML = opts('use', '용도지역');
+}
+
+function filtered(){
+  const j = $('fJimok').value, u = $('fUse').value;
+  return state.trades.filter(t => (!j || t.jimok === j) && (!u || t.use === u)
+    && !($('fShare').checked && t.share) && !($('fCancel').checked && t.cancel));
+}
+
+function emdStats(rows){
+  return state.emds.map(e => {
+    const r = rows.filter(t => t.emd === e), units = r.map(t => t.unit).filter(v => v != null);
+    return { e, n: r.length, med: median(units), avg: mean(units) };
+  }).sort((a,b) => a.e.cDist - b.e.cDist);
+}
+
+function render(){
+  $('result').style.display = 'block';
+  const rows = filtered(), units = rows.map(t => t.unit).filter(v => v != null);
+  $('kpis').innerHTML = [
+    ['거래 건수', fmt(rows.length), '건'],
+    ['㎡당 단가 중앙값', fmt(median(units)), '원'],
+    ['㎡당 단가 평균', fmt(mean(units)), '원'],
+    ['㎡당 단가 범위', units.length ? `<span style="font-size:15px">${fmt(Math.min(...units))} ~ ${fmt(Math.max(...units))}</span>` : '-', '원'],
+    ['포함 읍면동', state.emds.length, '곳']
+  ].map(([k,v,u]) => `<div class="kpi"><dt>${k}</dt><dd>${v}<small>${u}</small></dd></div>`).join('');
+  $('resultMeta').innerHTML = `반경 <strong>${state.rKm}km</strong> · 시군구 ${state.sggs.length}곳 · 읍면동 ${state.emds.length}곳`;
+  $('sArea').textContent = `${state.sggs.length}개 시군구 · ${state.emds.length}개 읍면동`;
+  $('sArea').className = '';
+  summarize();
+  const stats = emdStats(rows);
+  renderMap(stats);
+  renderCharts(rows);
+  $('emdTable').innerHTML = '<tr><th>읍면동</th><th class="r">중심까지 거리</th><th class="r">거래 건수</th><th class="r">㎡당 중앙값(원)</th><th class="r">㎡당 평균(원)</th></tr>'
+    + stats.map(s => `<tr><td>${esc(s.e.full)}</td><td class="r">${s.e.cDist.toFixed(1)}km</td><td class="r">${s.n}</td><td class="r">${fmt(s.med)}</td><td class="r">${fmt(s.avg)}</td></tr>`).join('');
+  renderTable(rows);
+  const last = state.months[state.months.length-1];
+  $('caveat').innerHTML = `<strong>참고용 자료예요.</strong> 실거래 자료는 지번 일부가 가려져(예: 1**) 정확한 필지 위치를 알 수 없어, 반경에 일부라도 걸친 읍면동의 거래를 모두 포함하고 거리는 읍면동 중심까지로 추정합니다. `
+    + `거래 신고 기한(계약 후 30일) 때문에 ${last.slice(0,4)}년 ${+last.slice(4)}월 등 최근 거래는 아직 덜 집계되었을 수 있어요.`;
+}
+
+function renderMap(stats){
+  if(!map){
+    map = L.map('map');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19, attribution:'&copy; OpenStreetMap' }).addTo(map);
+    layers = L.layerGroup().addTo(map);
+  }
+  layers.clearLayers();
+  const meds = stats.map(s => s.med).filter(v => v != null), lo = Math.min(...meds), hi = Math.max(...meds);
+  stats.forEach(s => {
+    const t = s.med == null || hi === lo ? 0.3 : 0.15 + 0.65*(s.med-lo)/(hi-lo);
+    L.polygon(s.e.rings.map(rg => rg.map(([x,y]) => [y,x])), { color:'#216449', weight:1, fillColor:'#216449', fillOpacity: s.n ? t : 0.04 })
+      .bindPopup(`<b>${esc(s.e.full)}</b><br>거래 ${s.n}건<br>㎡당 중앙값 ${fmt(s.med)}원`).addTo(layers);
+  });
+  const center = L.latLng(state.p.lat, state.p.lng);
+  L.circle(center, { radius: state.rKm*1000, color:'#b3261e', weight:2, fill:false, dashArray:'6 4' }).addTo(layers);
+  L.marker(center).bindPopup(esc(state.p.text)).addTo(layers);
+  map.fitBounds(center.toBounds(state.rKm*2000), { padding:[10,10] });
+  setTimeout(() => map.invalidateSize(), 0);
+}
+
+function renderCharts(rows){
+  Object.values(charts).forEach(c => c.destroy());
+  const labels = state.months.map(m => `${m.slice(2,4)}.${m.slice(4)}`);
+  const by = state.months.map(m => rows.filter(t => t.ym === m));
+  charts.m = new Chart($('cMonth'), {
+    data: { labels, datasets: [
+      { type:'bar', label:'거래 건수', data: by.map(r => r.length), backgroundColor:'#d6e6d8', borderRadius:4, yAxisID:'y1' },
+      { type:'line', label:'㎡당 중앙값(원)', data: by.map(r => median(r.map(t => t.unit).filter(v => v != null))), borderColor:'#216449', backgroundColor:'#216449', tension:.3, spanGaps:true, yAxisID:'y' }
+    ]},
+    options: { maintainAspectRatio:false, interaction:{mode:'index', intersect:false},
+      scales: { y:{ position:'left', ticks:{ callback:v => fmt(v) } }, y1:{ position:'right', grid:{ drawOnChartArea:false } } } }
+  });
+  const jim = [...new Set(rows.map(t => t.jimok))].map(j => {
+    const u = rows.filter(t => t.jimok === j).map(t => t.unit).filter(v => v != null);
+    return { j, n:u.length, med:median(u) };
+  }).sort((a,b) => b.med - a.med);
+  charts.j = new Chart($('cJimok'), {
+    type:'bar',
+    data: { labels: jim.map(d => `${d.j} (${d.n}건)`), datasets: [{ label:'㎡당 중앙값(원)', data: jim.map(d => d.med), backgroundColor:'#558368', borderRadius:4 }] },
+    options: { indexAxis:'y', maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ callback:v => fmt(v) } } } }
+  });
+}
+
+const COLS = [
+  ['date','계약일'], ['dist','거리(km)',1], ['sggNm','시군구'], ['umd','법정동'], ['jibun','지번'], ['jimok','지목'], ['use','용도지역'],
+  ['area','면적(㎡)',1], ['amount','거래금액(만원)',1], ['unit','㎡당 단가(원)',1], ['gbn','거래유형'], ['share','지분'], ['cancel','해제']
+];
+function cell(t, k){
+  if(k === 'dist') return t.dist.toFixed(1);
+  if(k === 'unit' || k === 'amount') return fmt(t[k]);
+  if(k === 'area') return t.area.toLocaleString('ko-KR');
+  if(k === 'cancel') return t.cancel ? `<span class="tag">해제 ${esc(t.cancelDay)}</span>` : '';
+  return esc(t[k]);
+}
+function renderTable(rows){
+  const sorted = [...rows].sort((a,b) => { const x=a[sortKey], y=b[sortKey]; return (x>y?1:x<y?-1:0)*sortDir; });
+  const shown = sorted.slice(0, 2000);
+  $('cnt').textContent = `${rows.length.toLocaleString()}건` + (rows.length > shown.length ? ` (화면에는 ${shown.length}건, 엑셀에는 전체)` : '');
+  $('tradeTable').innerHTML = '<tr>' + COLS.map(([k,l,r]) => `<th data-k="${k}"${r?' class="r"':''}>${l}${k===sortKey?(sortDir>0?' ▲':' ▼'):''}</th>`).join('') + '</tr>'
+    + shown.map(t => '<tr>' + COLS.map(([k,,r]) => `<td${r?' class="r"':''}>${cell(t,k)}</td>`).join('') + '</tr>').join('');
+}
+
+function downloadXlsx(){
+  if(!state) return;
+  const rows = filtered();
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows.map(t => ({
+    '계약일':t.date, '추정거리(km)':+t.dist.toFixed(2), '시군구':t.sggNm, '법정동':t.umd, '지번(일부비공개)':t.jibun, '지목':t.jimok,
+    '용도지역':t.use, '거래면적(㎡)':t.area, '거래금액(만원)':t.amount, '㎡당 단가(원)':t.unit == null ? null : Math.round(t.unit),
+    '거래유형':t.gbn, '지분거래':t.share, '해제여부':t.cancel ? 'O' : '', '해제사유발생일':t.cancelDay
+  }))), '거래목록');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(emdStats(rows).map(s => ({
+    '읍면동':s.e.full, '법정동코드':s.e.code, '중심까지 거리(km)':+s.e.cDist.toFixed(2), '거래 건수':s.n,
+    '㎡당 중앙값(원)':s.med == null ? null : Math.round(s.med), '㎡당 평균(원)':s.avg == null ? null : Math.round(s.avg)
+  }))), '읍면동별');
+  const m = state.months;
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['입력 주소', state.addr], ['확인된 주소', state.p.text], ['위도', state.p.lat], ['경도', state.p.lng],
+    ['반경(km)', state.rKm], ['계약 기간', `${m[0]} ~ ${m[m.length-1]}`],
+    ['지목 필터', $('fJimok').value || '전체'], ['용도지역 필터', $('fUse').value || '전체'],
+    ['지분거래 제외', $('fShare').checked ? '예' : '아니오'], ['해제된 거래 제외', $('fCancel').checked ? '예' : '아니오'],
+    ['조회 시각', state.at.toLocaleString('ko-KR')], ['출처', '국토교통부 토지 매매 실거래가 자료 (공공데이터포털)'],
+    ['유의사항', '지번 일부 비공개로 거리는 읍면동 중심까지의 추정 거리이며, 반경에 일부라도 걸친 읍면동의 거래를 모두 포함함']
+  ]), '조회조건');
+  const name = state.addr.replace(/[\\/:*?"<>|]/g, '').slice(0, 40);
+  XLSX.writeFile(wb, `토지실거래가_${name}_반경${state.rKm}km_${m[0]}-${m[m.length-1]}.xlsx`);
+}
+
+$('kData').value = store.get('kData');
+$('kVworld').value = store.get('kVworld');
+if(!$('kData').value || !$('kVworld').value) $('keyBox').open = true;
+Chart.defaults.font.family = "'Noto Sans KR', sans-serif";
+Chart.defaults.color = '#737e77';
+summarize();
+$('addr').addEventListener('input', summarize);
+document.querySelectorAll('input[name=radius]').forEach(r => r.addEventListener('change', summarize));
+$('reset').addEventListener('click', () => {
+  $('form').reset(); state = null; setProgress(0);
+  $('result').style.display = 'none';
+  $('sArea').textContent = '조회 전'; $('sArea').className = 'unselected';
+  setStatus('최근 12개월 계약 건을 조회합니다.');
+  summarize();
+});
+$('form').addEventListener('submit', search);
+['fJimok','fUse','fShare','fCancel'].forEach(id => $(id).addEventListener('change', render));
+$('tradeTable').addEventListener('click', e => {
+  const k = e.target.closest('th')?.dataset.k; if(!k) return;
+  sortDir = k === sortKey ? -sortDir : (k === 'date' ? -1 : 1); sortKey = k;
+  renderTable(filtered());
+});
+$('xlsx').addEventListener('click', downloadXlsx);
+</script>
+</body>
+</html>
