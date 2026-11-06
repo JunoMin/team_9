@@ -8,7 +8,7 @@
 //
 // 인증키는 이 스크립트에서만 쓰고 결과 파일과 브라우저 번들에는 넣지 않습니다.
 import { writeFile } from 'node:fs/promises'
-import { type LhLot, toLand, toNumber } from '../src/data/lhMapping.ts'
+import { type LhLot, toIsoDate, toLand, toNumber } from '../src/data/lhMapping.ts'
 import type { Land } from '../src/types/land.ts'
 
 const API = 'https://apis.data.go.kr/B552555'
@@ -108,7 +108,9 @@ async function noticeLots(notice: Row): Promise<LhLot[]> {
       noticeId: String(notice.PAN_ID),
       noticeName: String(notice.PAN_NM ?? ''),
       regionName: String(notice.CNP_CD_NM ?? ''),
+      districtName: '',
       status: String(notice.PAN_SS ?? ''),
+      postedOn: String(notice.PAN_NT_ST_DT ?? ''),
       closesOn: String(notice.CLSG_DT ?? ''),
       detailUrl: String(notice.DTL_URL ?? '').trim(),
       saleMethod,
@@ -143,7 +145,9 @@ async function suuiLots(): Promise<LhLot[]> {
     noticeId: `SUUI-${row.bzdtCd}`,
     noticeName: `${row.bzdtNm ?? ''} 선착순 수의계약`,
     regionName: String(row.cnpNm ?? ''),
+    districtName: String(row.bzdtNm ?? ''),
     status: '수의계약중',
+    postedOn: '',
     closesOn: '',
     detailUrl: SUUI_URL,
     saleMethod: '수의계약' as const,
@@ -153,6 +157,15 @@ async function suuiLots(): Promise<LhLot[]> {
     areaM2: toNumber(row.lndAr),
     priceWon: toNumber(row.splAmt),
     contactPhone: String(row.iqyTlno ?? ''),
+    suui: {
+      zoning: String(row.ppAraNm ?? '') || undefined,
+      buildingCoverage: toNumber(row.btlrRt) ?? undefined,
+      floorAreaRatio: toNumber(row.bukRt) ?? undefined,
+      paymentMethod: String(row.stlPcRcpMdDsNm ?? '') || undefined,
+      paymentMonths: toNumber(row.pcPymCnMcnt) ?? undefined,
+      usableFrom: toIsoDate(row.lndUsPsbDt),
+      brokerAllowed: row.trdMdtLndYn === 'Y',
+    },
   }))
 }
 

@@ -28,12 +28,13 @@
 | `region`    | 시도 id (`gyeonggi`, `chungnam` …). 원본이 시군구를 일정하게 주지 않아 시도 단위입니다.                 |
 | `purpose`   | 용도명 묶음: `detached`, `detached-shop`(점포겸용), `neighborhood`, `commercial`, `industrial`, `other` |
 | `useName`   | 원본 용도명 그대로 (예: `실수요자택지 주거전용`)                                                        |
+| `suui`      | 수의계약 필지만: 용도지역, 건폐율·용적률, 납부방식·기간, 사용 가능일, 중개 알선 가능 여부               |
 | 나머지      | 주소·지번·공고명·마감일·상세 링크·수의계약 문의 전화 (모두 선택 필드)                                   |
 
 규칙은 `src/data/lhMapping.ts`에 있고 `tests/lhMapping.test.ts`가 검사합니다.
 
-## 화면에 연결할 때 (다른 담당과 맞출 부분)
+## 화면 연결
 
-- 지역·용도 선택지(`src/config/searchSteps.ts`)의 id를 위 매핑 id에 맞춰야 결과가 나옵니다. 지금 선택지(평택·안성·오산)는 실제 데이터에 없습니다.
-- `App.tsx`에서 `demoLands` 대신 `lhLands`를 넘기면 연결됩니다. 이때 결과 화면의 ‘예시·가상 토지’ 문구도 바꿔야 합니다.
-- 스냅숏은 약 1.8MB(필지 약 2,700건)라 연결하면 번들이 커집니다. 필요하면 `public/`의 JSON을 지연 로딩하는 방식으로 바꿉니다.
+- 검색 선택지(`src/config/searchSteps.ts`)는 이 데이터에서 지역·용도별 필지 수를 세어 만듭니다. 판매 중인 필지가 없는 시도는 선택지에 나오지 않습니다.
+- 선택한 필지를 A02·A03에 넘기는 형식은 [handoff.md](handoff.md)에 있습니다.
+- 스냅숏을 번들에 직접 넣어 JS가 약 1.8MB(gzip 약 70KB → 145KB) 늘었습니다. 문제가 되면 `public/`의 JSON을 지연 로딩하는 방식으로 바꿉니다.

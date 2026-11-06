@@ -2,20 +2,44 @@ import { useEffect, useRef, useState } from 'react'
 import { Brand } from './components/Brand'
 import { ChoiceGrid } from './components/ChoiceGrid'
 import { Results } from './components/Results'
+import { SelectedLots } from './components/SelectedLots'
 import { SelectionSummary } from './components/SelectionSummary'
 import { StepNavigation } from './components/StepNavigation'
-import { emptyCriteria, isComplete, searchSteps, selectedChoice } from './config/searchSteps'
-import { demoLands } from './data/demoLands'
+import {
+  emptyCriteria,
+  isComplete,
+  isStepDone,
+  searchSteps,
+  toggleChoice,
+} from './config/searchSteps'
+import { lhLands, lhLandsFetchedAt } from './data/lhLands.generated'
+import { loadSelectedLots } from './handoff/selectedLots'
 import { searchLands } from './lib/search'
-import type { SearchCriteria } from './types/land'
+import type { Land, SearchCriteria } from './types/land'
+
+const landsById = new Map(lhLands.map((land) => [land.id, land]))
+
+// 이전에 넘긴 선택이 있으면 같은 필지가 아직 판매 중일 때만 되살립니다.
+function restoreSelection(): string[] {
+  return (loadSelectedLots()?.lots ?? []).map((lot) => lot.lotId).filter((id) => landsById.has(id))
+}
 
 export default function App() {
   const [criteria, setCriteria] = useState<SearchCriteria>({ ...emptyCriteria })
   const [current, setCurrent] = useState(0)
   const [showResults, setShowResults] = useState(false)
+  const [useKeyword, setUseKeyword] = useState('')
+  const [selectedIds, setSelectedIds] = useState<string[]>(restoreSelection)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const step = searchSteps[current]
-  const hasSelection = Boolean(selectedChoice(criteria, step))
+  const hasSelection = isStepDone(criteria, step)
+  const selectedLands = selectedIds.map((id) => landsById.get(id)!)
+
+  function toggleLand(land: Land) {
+    setSelectedIds((ids) =>
+      ids.includes(land.id) ? ids.filter((id) => id !== land.id) : [...ids, land.id],
+    )
+  }
 
   // 단계 전환을 키보드·스크린 리더 사용자에게도 알려 줍니다.
   useEffect(() => {
@@ -28,6 +52,7 @@ export default function App() {
   }
   function reset() {
     setCriteria({ ...emptyCriteria })
+    setUseKeyword('')
     edit(0)
   }
   function next() {
@@ -46,7 +71,7 @@ export default function App() {
           <Brand />
           <div className="header-meta">
             <span>선택으로 찾는 나의 토지</span>
-            <span className="template-badge">UI 템플릿</span>
+            <span className="template-badge">PoC</span>
           </div>
         </div>
       </header>
@@ -77,10 +102,21 @@ export default function App() {
                 <h2 id="step-title" tabIndex={-1} ref={headingRef}>
                   {showResults ? '고르신 조건으로 찾아봤어요.' : step.title}
                 </h2>
-                <p>{showResults ? '면적과 전체 가격을 한눈에 살펴보세요.' : step.description}</p>
+                <p>
+                  {showResults
+                    ? '상세 검토할 필지를 골라 규제·시세 분석으로 넘겨 주세요.'
+                    : step.description}
+                </p>
               </div>
               {showResults ? (
-                <Results lands={searchLands(demoLands, criteria)} onEdit={() => edit(2)} />
+                <Results
+                  lands={searchLands(lhLands, criteria)}
+                  useKeyword={useKeyword}
+                  onUseKeyword={setUseKeyword}
+                  selectedIds={new Set(selectedIds)}
+                  onToggle={toggleLand}
+                  onEdit={() => edit(2)}
+                />
               ) : (
                 <form
                   onSubmit={(event) => {
@@ -92,13 +128,31 @@ export default function App() {
                     step={step}
                     selected={criteria[step.key]}
                     onSelect={(value) =>
-                      setCriteria((previous) => ({ ...previous, [step.key]: value }))
+                      setCriteria((previous) => ({
+                        ...previous,
+                        [step.key]: toggleChoice(previous[step.key], value, step.multiple),
+                      }))
                     }
                   />
+                  {step.key === 'purpose' && (
+                    <label className="keyword-field">
+                      <span>
+                        용도 단어로 좁히기 <small>(선택)</small>
+                      </span>
+                      <input
+                        type="search"
+                        value={useKeyword}
+                        onChange={(event) => setUseKeyword(event.target.value)}
+                        placeholder="예: 자족시설, 주차장, 준주거"
+                      />
+                    </label>
+                  )}
                   <div className="form-actions">
                     <span>
                       {current === 0 ? (
-                        <span className="selection-hint">하나를 선택해 주세요</span>
+                        <span className="selection-hint">
+                          {step.multiple ? '여러 곳을 고를 수 있어요' : '하나를 선택해 주세요'}
+                        </span>
                       ) : (
                         <button
                           type="button"
@@ -118,15 +172,25 @@ export default function App() {
               )}
             </div>
           </section>
-          <SelectionSummary criteria={criteria} onEdit={edit} onReset={reset} />
+          <div className="side-column">
+            <SelectionSummary criteria={criteria} onEdit={edit} onReset={reset} />
+            <SelectedLots
+              lands={selectedLands}
+              onRemove={toggleLand}
+              onClear={() => setSelectedIds([])}
+            />
+          </div>
         </div>
         <div className="demo-notice">
           <span className="notice-symbol" aria-hidden="true">
             i
           </span>
           <p>
-            <strong>예시 데이터로 미리 둘러보세요.</strong> 현재 목록은 화면 개발용이며, 실제 공급
-            정보는 추후 연결됩니다.
+            <strong>
+              LH 공고 데이터 기준 {new Date(lhLandsFetchedAt).toLocaleDateString('ko-KR')}
+            </strong>
+            판매 중인 공고(공고중·접수중)와 선착순 수의계약 토지입니다. 결과는 참고용이며 매수 판단
+            전 공고문 원문을 확인하세요.
           </p>
         </div>
       </main>

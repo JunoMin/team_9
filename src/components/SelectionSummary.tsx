@@ -1,4 +1,4 @@
-import { searchSteps, selectedChoice } from '../config/searchSteps'
+import { isStepDone, searchSteps, summaryLabel } from '../config/searchSteps'
 import type { SearchCriteria } from '../types/land'
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
 }
 
 export function SelectionSummary({ criteria, onEdit, onReset }: Props) {
-  const selectedCount = searchSteps.filter((step) => selectedChoice(criteria, step)).length
+  const selectedCount = searchSteps.filter((step) => isStepDone(criteria, step)).length
   return (
     <aside className="summary-panel" aria-labelledby="summary-title">
       <div className="summary-heading">
@@ -23,18 +23,18 @@ export function SelectionSummary({ criteria, onEdit, onReset }: Props) {
       </div>
       <dl className="summary-list">
         {searchSteps.map((step, index) => {
-          const choice = selectedChoice(criteria, step)
+          const label = summaryLabel(criteria, step)
           return (
             <div key={step.key}>
               <dt>{step.label}</dt>
               <dd>
-                {choice ? (
+                {label ? (
                   <button
                     type="button"
                     onClick={() => onEdit(index)}
-                    aria-label={`${step.label}: ${choice.label}, 수정`}
+                    aria-label={`${step.label}: ${label}, 수정`}
                   >
-                    {choice.label}
+                    {label}
                     <span aria-hidden="true">↗</span>
                   </button>
                 ) : (

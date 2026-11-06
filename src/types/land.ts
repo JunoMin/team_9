@@ -1,6 +1,7 @@
 export type StepKey = 'region' | 'purpose' | 'budget' | 'area'
 
-export type SearchCriteria = Record<StepKey, string | null>
+// 단계마다 고른 선택지 id 목록입니다. 여러 개를 고를 수 있는 단계(multiple)만 2개 이상이 됩니다.
+export type SearchCriteria = Record<StepKey, string[]>
 
 export interface Choice {
   id: string
@@ -15,6 +16,7 @@ export interface SearchStep {
   label: string
   title: string
   description: string
+  multiple?: boolean
   choices: Choice[]
 }
 
@@ -35,9 +37,23 @@ export interface Land {
   saleMethod?: SaleMethod
   noticeId?: string
   noticeName?: string
+  districtName?: string
+  postedOn?: string
   closesOn?: string
   detailUrl?: string
   contactPhone?: string
+  suui?: SuuiDetail
+}
+
+// 선착순 수의계약 목록에만 있는 정보입니다. 공고 필지의 규제·납부 조건은 공고문에서 확인합니다.
+export interface SuuiDetail {
+  zoning?: string
+  buildingCoverage?: number
+  floorAreaRatio?: number
+  paymentMethod?: string
+  paymentMonths?: number
+  usableFrom?: string
+  brokerAllowed: boolean
 }
 
 export type LandSource = 'lh-notice' | 'lh-suui'
