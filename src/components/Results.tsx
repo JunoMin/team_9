@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { dateStamp, downloadFile } from '../lib/download'
+import { naverMapUrl } from '../lib/mapLink'
 import {
   areaPyeong,
   filterByUse,
@@ -169,6 +170,14 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
                   >
                     건축 규제 보기
                   </button>
+                  <a
+                    className="regulations-button"
+                    href={naverMapUrl(land)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    네이버 지도<span className="sr-only"> (새 창)</span> ↗
+                  </a>
                 </div>
               </div>
               <dl className="land-numbers">
