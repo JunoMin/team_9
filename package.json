@@ -16,7 +16,8 @@
     "test": "node --test tests/*.test.ts",
     "check": "pnpm format:check && pnpm lint && pnpm test && pnpm build",
     "preview": "vite preview",
-    "data:lh": "node --env-file-if-exists=.env scripts/fetch-lh-lands.ts"
+    "data:lh": "node --env-file-if-exists=.env scripts/fetch-lh-lands.ts",
+    "guidelines:targets": "node scripts/guideline-targets.ts"
   },
   "dependencies": {
     "react": "^19.3.1",

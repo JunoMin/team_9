@@ -35,6 +35,8 @@ export interface Land {
   saleMethod?: SaleMethod
   noticeId?: string
   noticeName?: string
+  districtName?: string
+  postedOn?: string
   closesOn?: string
   detailUrl?: string
   contactPhone?: string

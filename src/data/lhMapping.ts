@@ -6,7 +6,10 @@ export interface LhLot {
   noticeId: string
   noticeName: string
   regionName: string
+  // 사업지구명은 수의계약 목록에만 별도 필드로 옵니다. 공고 API는 공고명 안에만 있습니다.
+  districtName: string
   status: string
+  postedOn: string
   closesOn: string
   detailUrl: string
   saleMethod: SaleMethod
@@ -74,6 +77,8 @@ export function toLand(lot: LhLot, id: string): Land | null {
     saleMethod: lot.saleMethod,
     noticeId: lot.noticeId,
     noticeName: lot.noticeName,
+    districtName: lot.districtName || undefined,
+    postedOn: lot.postedOn || undefined,
     closesOn: lot.closesOn || undefined,
     detailUrl: lot.detailUrl || undefined,
     contactPhone: lot.contactPhone || undefined,
