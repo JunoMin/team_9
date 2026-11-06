@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { LandRegulations } from './LandRegulations'
 import { formatPrice, labelFor } from '../lib/search'
 import type { Land } from '../types/land'
 
@@ -67,6 +68,7 @@ export function Results({ lands, onEdit }: Props) {
                 <dd className="price">{formatPrice(land.priceWon)}</dd>
               </div>
             </dl>
+            <LandRegulations />
           </li>
         ))}
       </ul>
