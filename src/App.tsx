@@ -5,7 +5,13 @@ import { Results } from './components/Results'
 import { SelectedLots } from './components/SelectedLots'
 import { SelectionSummary } from './components/SelectionSummary'
 import { StepNavigation } from './components/StepNavigation'
-import { emptyCriteria, isComplete, searchSteps, selectedChoice } from './config/searchSteps'
+import {
+  emptyCriteria,
+  isComplete,
+  isStepDone,
+  searchSteps,
+  toggleChoice,
+} from './config/searchSteps'
 import { lhLands, lhLandsFetchedAt } from './data/lhLands.generated'
 import { loadSelectedLots } from './handoff/selectedLots'
 import { searchLands } from './lib/search'
@@ -22,10 +28,11 @@ export default function App() {
   const [criteria, setCriteria] = useState<SearchCriteria>({ ...emptyCriteria })
   const [current, setCurrent] = useState(0)
   const [showResults, setShowResults] = useState(false)
+  const [useKeyword, setUseKeyword] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>(restoreSelection)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const step = searchSteps[current]
-  const hasSelection = Boolean(selectedChoice(criteria, step))
+  const hasSelection = isStepDone(criteria, step)
   const selectedLands = selectedIds.map((id) => landsById.get(id)!)
 
   function toggleLand(land: Land) {
@@ -45,6 +52,7 @@ export default function App() {
   }
   function reset() {
     setCriteria({ ...emptyCriteria })
+    setUseKeyword('')
     edit(0)
   }
   function next() {
@@ -103,6 +111,8 @@ export default function App() {
               {showResults ? (
                 <Results
                   lands={searchLands(lhLands, criteria)}
+                  useKeyword={useKeyword}
+                  onUseKeyword={setUseKeyword}
                   selectedIds={new Set(selectedIds)}
                   onToggle={toggleLand}
                   onEdit={() => edit(2)}
@@ -118,13 +128,31 @@ export default function App() {
                     step={step}
                     selected={criteria[step.key]}
                     onSelect={(value) =>
-                      setCriteria((previous) => ({ ...previous, [step.key]: value }))
+                      setCriteria((previous) => ({
+                        ...previous,
+                        [step.key]: toggleChoice(previous[step.key], value, step.multiple),
+                      }))
                     }
                   />
+                  {step.key === 'purpose' && (
+                    <label className="keyword-field">
+                      <span>
+                        용도 단어로 좁히기 <small>(선택)</small>
+                      </span>
+                      <input
+                        type="search"
+                        value={useKeyword}
+                        onChange={(event) => setUseKeyword(event.target.value)}
+                        placeholder="예: 자족시설, 주차장, 준주거"
+                      />
+                    </label>
+                  )}
                   <div className="form-actions">
                     <span>
                       {current === 0 ? (
-                        <span className="selection-hint">하나를 선택해 주세요</span>
+                        <span className="selection-hint">
+                          {step.multiple ? '여러 곳을 고를 수 있어요' : '하나를 선택해 주세요'}
+                        </span>
                       ) : (
                         <button
                           type="button"

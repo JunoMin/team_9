@@ -1,4 +1,4 @@
-import type { Land, LandSource, SaleMethod } from '../types/land.ts'
+import type { Land, LandSource, SaleMethod, SuuiDetail } from '../types/land.ts'
 
 // LH 원본(공고 공급정보·수의계약 목록)을 화면용 Land로 바꾸기 전의 중간 형태입니다.
 export interface LhLot {
@@ -19,6 +19,7 @@ export interface LhLot {
   areaM2: number | null
   priceWon: number | null
   contactPhone: string
+  suui?: SuuiDetail
 }
 
 // 시도명(CNP_CD_NM·cnpNm) → 지역 선택지 id. 원본은 시도 단위까지만 일정하게 제공됩니다.
@@ -82,7 +83,14 @@ export function toLand(lot: LhLot, id: string): Land | null {
     closesOn: lot.closesOn || undefined,
     detailUrl: lot.detailUrl || undefined,
     contactPhone: lot.contactPhone || undefined,
+    suui: lot.suui,
   }
+}
+
+// 수의계약 원본의 'YYYYMMDD' 날짜를 'YYYY-MM-DD'로 바꿉니다.
+export function toIsoDate(value: unknown): string | undefined {
+  const match = String(value ?? '').match(/^(\d{4})(\d{2})(\d{2})$/)
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : undefined
 }
 
 // '1,010.3' 같은 원본 숫자 문자열을 숫자로 바꿉니다. 비었거나 숫자가 아니면 null입니다.

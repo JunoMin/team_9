@@ -28,6 +28,7 @@
 | `region`    | 시도 id (`gyeonggi`, `chungnam` …). 원본이 시군구를 일정하게 주지 않아 시도 단위입니다.                 |
 | `purpose`   | 용도명 묶음: `detached`, `detached-shop`(점포겸용), `neighborhood`, `commercial`, `industrial`, `other` |
 | `useName`   | 원본 용도명 그대로 (예: `실수요자택지 주거전용`)                                                        |
+| `suui`      | 수의계약 필지만: 용도지역, 건폐율·용적률, 납부방식·기간, 사용 가능일, 중개 알선 가능 여부               |
 | 나머지      | 주소·지번·공고명·마감일·상세 링크·수의계약 문의 전화 (모두 선택 필드)                                   |
 
 규칙은 `src/data/lhMapping.ts`에 있고 `tests/lhMapping.test.ts`가 검사합니다.

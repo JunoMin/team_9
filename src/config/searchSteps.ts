@@ -3,11 +3,19 @@ import { lhRegionIds } from '../data/lhMapping.ts'
 import type { Choice, SearchCriteria, SearchStep } from '../types/land.ts'
 
 export const emptyCriteria: SearchCriteria = {
-  region: null,
-  purpose: null,
-  budget: null,
-  area: null,
+  region: [],
+  purpose: [],
+  budget: [],
+  area: [],
 }
+
+export const M2_PER_PYEONG = 3.305785
+
+export function toPyeong(areaM2: number) {
+  return areaM2 / M2_PER_PYEONG
+}
+
+const pyeong = (value: number) => Math.round(value * M2_PER_PYEONG * 100) / 100
 
 function countBy(key: 'region' | 'purpose') {
   const counts = new Map<string, number>()
@@ -51,10 +59,11 @@ export const searchSteps: SearchStep[] = [
     key: 'region',
     label: '지역',
     title: '어느 지역의 땅을 찾으세요?',
-    description: 'LH가 지금 판매 중인 토지가 있는 시도입니다.',
+    description: '관심 있는 시도를 모두 골라 주세요. 여러 곳을 함께 볼 수 있어요.',
+    multiple: true,
     choices: [
       ...regionChoices,
-      { id: 'any', label: '전체 지역', description: '전국을 둘러볼게요' },
+      { id: 'any', label: '전국', description: '지역을 가리지 않고 볼게요' },
     ],
   },
   {
@@ -104,31 +113,64 @@ export const searchSteps: SearchStep[] = [
     key: 'area',
     label: '면적',
     title: '어느 정도 넓이면 좋을까요?',
-    description: '원하는 면적 범위를 선택해 주세요.',
+    description: '원하는 면적 범위를 평 단위로 선택해 주세요.',
     choices: [
       {
-        id: 'upto-330',
-        label: '330㎡ 이하',
-        description: '약 100평 이하 · 단독주택 택지 규모',
-        max: 330,
+        id: 'upto-100py',
+        label: '100평 이하',
+        description: '약 330㎡ 이하 · 단독주택 택지 규모',
+        max: pyeong(100),
       },
-      { id: '330-660', label: '330–660㎡', description: '약 100–200평', min: 330, max: 660 },
-      { id: '660-1650', label: '660–1,650㎡', description: '약 200–500평', min: 660, max: 1650 },
       {
-        id: 'over-1650',
-        label: '1,650㎡ 이상',
-        description: '약 500평 이상 · 상업·산업 용지 규모',
-        min: 1650,
+        id: '100-200py',
+        label: '100–200평',
+        description: '약 330–660㎡',
+        min: pyeong(100),
+        max: pyeong(200),
+      },
+      {
+        id: '200-500py',
+        label: '200–500평',
+        description: '약 660–1,650㎡',
+        min: pyeong(200),
+        max: pyeong(500),
+      },
+      {
+        id: 'over-500py',
+        label: '500평 이상',
+        description: '약 1,650㎡ 이상 · 상업·산업 용지 규모',
+        min: pyeong(500),
       },
       { id: 'any', label: '면적 무관', description: '넓이에 제한 없이 볼게요' },
     ],
   },
 ]
 
+export function selectedChoices(criteria: SearchCriteria, step: SearchStep) {
+  return step.choices.filter((choice) => criteria[step.key].includes(choice.id))
+}
+
+// 한 개만 고르는 단계(예산·면적)의 선택지입니다.
 export function selectedChoice(criteria: SearchCriteria, step: SearchStep) {
-  return step.choices.find((choice) => choice.id === criteria[step.key])
+  return selectedChoices(criteria, step)[0]
+}
+
+export function isStepDone(criteria: SearchCriteria, step: SearchStep) {
+  return selectedChoices(criteria, step).length > 0
 }
 
 export function isComplete(criteria: SearchCriteria) {
-  return searchSteps.every((step) => selectedChoice(criteria, step) !== undefined)
+  return searchSteps.every((step) => isStepDone(criteria, step))
+}
+
+// 선택지를 눌렀을 때의 다음 선택 상태. 여러 개 고르는 단계에서 '전국'(any)은 다른 선택과 함께 쓰지 않습니다.
+export function toggleChoice(selected: string[], id: string, multiple = false): string[] {
+  if (!multiple || id === 'any') return [id]
+  const rest = selected.filter((value) => value !== 'any')
+  return rest.includes(id) ? rest.filter((value) => value !== id) : [...rest, id]
+}
+
+export function summaryLabel(criteria: SearchCriteria, step: SearchStep) {
+  const labels = selectedChoices(criteria, step).map((choice) => choice.label)
+  return labels.length > 2 ? `${labels[0]} 외 ${labels.length - 1}곳` : labels.join(', ')
 }

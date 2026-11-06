@@ -1,3 +1,4 @@
+import { areaPyeong, pricePerM2, pricePerPyeong } from '../lib/search.ts'
 import type { Land, SaleMethod } from '../types/land.ts'
 
 // PRD Section 3의 3단계 출력: 사용자가 고른 필지를 A02(규제)·A03(실거래)에 넘기는 형식입니다.
@@ -18,8 +19,14 @@ export interface SelectedLot {
   purpose: string
   saleMethod: SaleMethod | null
   areaM2: number
+  areaPyeong: number
   priceWon: number
   pricePerM2: number
+  pricePerPyeong: number
+  // 수의계약 목록에 있는 값입니다. 공고 필지는 null이며 A02가 시행지침에서 찾습니다.
+  zoning: string | null
+  buildingCoverage: number | null
+  floorAreaRatio: number | null
 }
 
 export interface SelectedLotsPayload {
@@ -43,8 +50,13 @@ export function toSelectedLot(land: Land): SelectedLot {
     purpose: land.purpose,
     saleMethod: land.saleMethod ?? null,
     areaM2: land.areaM2,
+    areaPyeong: areaPyeong(land),
     priceWon: land.priceWon,
-    pricePerM2: Math.round(land.priceWon / land.areaM2),
+    pricePerM2: pricePerM2(land),
+    pricePerPyeong: pricePerPyeong(land),
+    zoning: land.suui?.zoning ?? null,
+    buildingCoverage: land.suui?.buildingCoverage ?? null,
+    floorAreaRatio: land.suui?.floorAreaRatio ?? null,
   }
 }
 

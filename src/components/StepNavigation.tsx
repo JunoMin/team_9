@@ -1,4 +1,4 @@
-import { searchSteps, selectedChoice } from '../config/searchSteps'
+import { isStepDone, searchSteps } from '../config/searchSteps'
 import type { SearchCriteria } from '../types/land'
 
 interface Props {
@@ -12,10 +12,10 @@ export function StepNavigation({ criteria, current, onNavigate }: Props) {
     <nav className="step-navigation" aria-label="검색 조건 선택 단계">
       <ol>
         {searchSteps.map((step, index) => {
-          const completed = Boolean(selectedChoice(criteria, step))
+          const completed = isStepDone(criteria, step)
           const available = searchSteps
             .slice(0, index)
-            .every((prior) => selectedChoice(criteria, prior))
+            .every((prior) => isStepDone(criteria, prior))
           return (
             <li key={step.key}>
               <button

@@ -8,7 +8,7 @@
 //
 // 인증키는 이 스크립트에서만 쓰고 결과 파일과 브라우저 번들에는 넣지 않습니다.
 import { writeFile } from 'node:fs/promises'
-import { type LhLot, toLand, toNumber } from '../src/data/lhMapping.ts'
+import { type LhLot, toIsoDate, toLand, toNumber } from '../src/data/lhMapping.ts'
 import type { Land } from '../src/types/land.ts'
 
 const API = 'https://apis.data.go.kr/B552555'
@@ -157,6 +157,15 @@ async function suuiLots(): Promise<LhLot[]> {
     areaM2: toNumber(row.lndAr),
     priceWon: toNumber(row.splAmt),
     contactPhone: String(row.iqyTlno ?? ''),
+    suui: {
+      zoning: String(row.ppAraNm ?? '') || undefined,
+      buildingCoverage: toNumber(row.btlrRt) ?? undefined,
+      floorAreaRatio: toNumber(row.bukRt) ?? undefined,
+      paymentMethod: String(row.stlPcRcpMdDsNm ?? '') || undefined,
+      paymentMonths: toNumber(row.pcPymCnMcnt) ?? undefined,
+      usableFrom: toIsoDate(row.lndUsPsbDt),
+      brokerAllowed: row.trdMdtLndYn === 'Y',
+    },
   }))
 }
 
