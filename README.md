@@ -21,6 +21,16 @@ pnpm check      # 정적 검사, 검색 테스트, 프로덕션 빌드
 pnpm preview    # 빌드 결과 확인 (pnpm build 실행 후)
 ```
 
+## GitHub Pages 배포
+
+배포 주소(Pages 활성화 후): https://junomin.github.io/team_9/
+
+최초 한 번 저장소 관리자 또는 maintainer가 [Settings → Pages](https://github.com/JunoMin/team_9/settings/pages)의 **Build and deployment → Source**를 **GitHub Actions**로 선택합니다. 비공개 저장소에서 Pages를 사용하려면 소유자 계정에 GitHub Pro 이상의 지원 요금제가 필요합니다.
+
+이후 `main`에 push하면 검사와 빌드를 통과한 사이트가 자동 배포됩니다. 수동 배포는 **Actions → Deploy GitHub Pages → Run workflow**에서 실행할 수 있습니다. 실제 배포 성공 여부와 주소는 해당 실행의 `deploy` 작업에서 확인합니다.
+
+`vite.config.ts`의 `base: '/team_9/'`가 프로젝트 주소에 맞게 정적 파일 경로를 지정합니다. 로컬에서도 터미널에 표시되는 `/team_9/` 주소를 사용합니다.
+
 ## 화면에서 확인할 것
 
 - 네 단계의 선택 카드와 이전·다음 이동
