@@ -785,6 +785,81 @@ dd {
   height: 17px;
   accent-color: var(--green);
 }
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin-top: 8px;
+}
+.card-actions .select-lot {
+  margin-top: 0;
+}
+.regulations-button {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid #ccd7cb;
+  border-radius: 7px;
+  background: white;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 600;
+}
+.regulations-button:hover {
+  background: #f0f6ee;
+}
+.regulations-dialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: white;
+  color: inherit;
+  box-shadow: 0 20px 60px #1b432633;
+}
+.regulations-dialog::backdrop {
+  background: #1d2a2266;
+}
+.regulations-dialog-body {
+  padding: 24px;
+}
+.regulations-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.regulations-dialog-header p {
+  font-size: 11px;
+  color: var(--green);
+}
+.regulations-dialog-header h3 {
+  margin-top: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.dialog-close {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  margin: -8px -8px 0 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #6f7a70;
+  font-size: 22px;
+}
+.dialog-close:hover {
+  background: #f1f4ee;
+}
+/* 카드 안에서 쓰던 구분선은 팝업에서는 필요 없습니다. */
+.regulations-dialog .land-regulations {
+  border-top: 0;
+  padding-top: 0;
+}
 .more-button {
   width: 100%;
   margin-top: 14px;
@@ -1065,6 +1140,16 @@ dd {
   .selected-panel {
     padding: 23px 20px;
     border-radius: 14px;
+  }
+  /* 휴대폰에서는 화면 아래에서 올라오는 시트로 보여 줍니다. */
+  .regulations-dialog {
+    width: 100vw;
+    max-width: 100vw;
+    margin: auto 0 0;
+    border-radius: 16px 16px 0 0;
+  }
+  .regulations-dialog-body {
+    padding: 22px 20px 28px;
   }
   .results-toolbar p {
     font-size: 11px;

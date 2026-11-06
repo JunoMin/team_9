@@ -14,7 +14,7 @@ import {
   type SortOrder,
 } from '../lib/search'
 import type { Land } from '../types/land'
-import { LandRegulations } from './LandRegulations'
+import { RegulationsDialog } from './RegulationsDialog'
 
 const PAGE_SIZE = 20
 const USE_CHIP_LIMIT = 12
@@ -48,6 +48,7 @@ function suuiFacts(land: Land): string[] {
 export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle, onEdit }: Props) {
   const [order, setOrder] = useState<SortOrder>('price')
   const [visible, setVisible] = useState(PAGE_SIZE)
+  const [regulationsLand, setRegulationsLand] = useState<Land | null>(null)
   const filtered = filterByUse(lands, useKeyword)
   const sorted = sortLands(filtered, order)
   const uses = useNameCounts(lands).slice(0, USE_CHIP_LIMIT)
@@ -155,10 +156,20 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
                   )}
                 </p>
                 {facts.length > 0 && <p className="suui-facts">{facts.join(' · ')}</p>}
-                <label className="select-lot">
-                  <input type="checkbox" checked={selected} onChange={() => onToggle(land)} />
-                  상세 검토할 필지로 선택
-                </label>
+                <div className="card-actions">
+                  <label className="select-lot">
+                    <input type="checkbox" checked={selected} onChange={() => onToggle(land)} />
+                    상세 검토할 필지로 선택
+                  </label>
+                  <button
+                    type="button"
+                    className="regulations-button"
+                    aria-haspopup="dialog"
+                    onClick={() => setRegulationsLand(land)}
+                  >
+                    건축 규제 보기
+                  </button>
+                </div>
               </div>
               <dl className="land-numbers">
                 <div>
@@ -179,7 +190,6 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
                   <dd className="price">{formatPrice(land.priceWon)}</dd>
                 </div>
               </dl>
-              <LandRegulations />
             </li>
           )
         })}
@@ -196,6 +206,7 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
       <p className="results-note">
         LH 공고·수의계약 목록 기준 참고 정보입니다. 신청 전 반드시 공고문 원문을 확인하세요.
       </p>
+      <RegulationsDialog land={regulationsLand} onClose={() => setRegulationsLand(null)} />
     </>
   )
 }
