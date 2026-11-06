@@ -1,0 +1,23 @@
+name: 개발 작업
+description: 팀원이 맡을 작은 작업을 정리합니다.
+title: '[작업] '
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: 만들거나 바꿀 내용
+      description: 사용자가 할 수 있게 될 일을 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: 작업 범위
+      description: 관련 화면이나 파일, 다른 팀원과 맞춰야 할 부분을 적어 주세요.
+  - type: textarea
+    id: done
+    attributes:
+      label: 완료 확인 방법
+      description: 어떤 동작을 확인하면 완료인지 적어 주세요.
+    validations:
+      required: true

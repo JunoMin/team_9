@@ -1,0 +1,21 @@
+name: 오류 제보
+description: 다시 확인할 수 있는 오류를 기록합니다.
+title: '[오류] '
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: 재현 순서
+      description: 선택한 조건, 사용 기기·브라우저를 함께 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대한 동작과 실제 동작
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 화면 캡처 또는 오류 메시지
