@@ -1,0 +1,81 @@
+name: LH 데이터 자동 갱신
+
+# 매일 아침 9시(한국 시간)에 LH 공고·수의계약 토지를 다시 받아,
+# 바뀐 내용이 있으면 PR을 만들거나 열려 있는 PR을 갱신합니다. main에 직접 올리지 않습니다.
+#
+# 필요한 저장소 설정
+# - Settings > Secrets and variables > Actions 에 LH_SERVICE_KEY (공공데이터포털 인증키, Decoding)
+# - Settings > Actions > General > Workflow permissions 에서
+#   "Allow GitHub Actions to create and approve pull requests" 체크
+on:
+  schedule:
+    - cron: '0 0 * * *' # UTC 00:00 = 한국 시간 09:00. GitHub 사정으로 몇 분~수십 분 늦어질 수 있습니다.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: refresh-lh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      BRANCH: chore/auto-refresh-lh-data
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: LH 데이터 수집
+        env:
+          LH_SERVICE_KEY: ${{ secrets.LH_SERVICE_KEY }}
+        run: |
+          if [ -z "$LH_SERVICE_KEY" ]; then
+            echo "::error::저장소 Secret LH_SERVICE_KEY가 없습니다."
+            exit 1
+          fi
+          pnpm data:lh
+
+      - name: 바뀐 내용 확인
+        id: diff
+        run: |
+          # 수집 시각(lhLandsFetchedAt)만 바뀐 날은 PR을 만들지 않습니다.
+          if git diff --quiet -I 'lhLandsFetchedAt' -- src/data/lhLands.generated.ts; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "토지 목록이 어제와 같아 PR을 만들지 않습니다."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 검사
+        if: steps.diff.outputs.changed == 'true'
+        run: pnpm check
+
+      - name: PR 만들기
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          today=$(TZ=Asia/Seoul date +%Y-%m-%d)
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -C "$BRANCH"
+          git add src/data/lhLands.generated.ts
+          git commit -m "chore: LH 토지 데이터 ${today} 기준으로 자동 갱신"
+          git push --force origin "$BRANCH"
+          title="chore: LH 토지 데이터 자동 갱신 (${today} 기준)"
+          body="매일 아침 9시 자동 갱신 워크플로(.github/workflows/refresh-lh-data.yml)가 만든 PR입니다. \`pnpm data:lh\`로 LH 공고·수의계약 토지를 다시 수집했고 \`pnpm check\`를 통과했습니다. 병합하지 않은 채로 다음 날 갱신이 돌면 이 PR이 최신 데이터로 덮어써집니다."
+          number=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
+          if [ -z "$number" ]; then
+            gh pr create --base main --head "$BRANCH" --title "$title" --body "$body"
+          else
+            gh pr edit "$number" --title "$title"
+          fi
