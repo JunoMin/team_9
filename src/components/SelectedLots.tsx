@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { lhLandsFetchedAt } from '../data/lhLands.generated'
 import { buildPayload, saveSelectedLots } from '../handoff/selectedLots'
-import { dateStamp, downloadFile } from '../lib/download'
 import { formatPrice } from '../lib/search'
 import type { Land } from '../types/land'
 
@@ -13,17 +12,20 @@ interface Props {
 
 // PRD 3단계 [HITL]: 사람이 고른 필지를 A02(규제)·A03(실거래) 입력 JSON으로 넘깁니다.
 export function SelectedLots({ lands, onRemove, onClear }: Props) {
-  const [handedOffAt, setHandedOffAt] = useState<string | null>(null)
+  const [handedOff, setHandedOff] = useState<{ at: string; count: number; key: string } | null>(
+    null,
+  )
+
+  const selectionKey = lands.map((land) => land.id).join('|')
 
   function handOff() {
     const payload = buildPayload(lands, lhLandsFetchedAt)
     saveSelectedLots(payload)
-    downloadFile(
-      `selected-lots-${dateStamp()}.json`,
-      JSON.stringify(payload, null, 2),
-      'application/json',
-    )
-    setHandedOffAt(new Date().toLocaleTimeString('ko-KR'))
+    setHandedOff({
+      at: new Date().toLocaleTimeString('ko-KR'),
+      count: lands.length,
+      key: selectionKey,
+    })
   }
 
   return (
@@ -61,7 +63,9 @@ export function SelectedLots({ lands, onRemove, onClear }: Props) {
         disabled={lands.length === 0}
         onClick={handOff}
       >
-        규제·시세 분석으로 넘기기
+        {handedOff?.key === selectionKey
+          ? `✓ 넘기기 완료 (${handedOff.count}개)`
+          : '규제·시세 분석으로 넘기기'}
       </button>
       {lands.length > 0 && (
         <button type="button" className="reset-button" onClick={onClear}>
@@ -69,9 +73,9 @@ export function SelectedLots({ lands, onRemove, onClear }: Props) {
         </button>
       )}
       <p className="summary-tip" role="status">
-        {handedOffAt
-          ? `${handedOffAt}에 선택 필지 JSON을 저장했어요.`
-          : '선택한 필지 정보는 JSON으로 저장되어 다음 분석 단계에서 씁니다.'}
+        {handedOff
+          ? `${handedOff.at}에 선택 필지 ${handedOff.count}개를 다음 분석 단계로 넘겼어요.`
+          : '선택한 필지 정보는 이 브라우저에 저장되어 다음 분석 단계에서 씁니다.'}
       </p>
     </section>
   )
