@@ -44,7 +44,7 @@ const purposeChoices: Choice[] = [
     label: '점포겸용 단독주택용지',
     description: '1층 상가를 둘 수 있는 택지',
   },
-  { id: 'neighborhood', label: '근린생활시설용지', description: '생활 편의시설을 위한 땅' },
+  { id: 'neighborhood', label: '근린생활시설용지', description: '생활 편의시설을 위한 토지' },
   { id: 'commercial', label: '상업용지', description: '일반·근린·중심상업용지' },
   { id: 'industrial', label: '산업·공장용지', description: '산업단지 공장 용지' },
   { id: 'other', label: '기타 용지', description: '주차장·업무·종교시설 등' },
@@ -58,7 +58,7 @@ export const searchSteps: SearchStep[] = [
   {
     key: 'region',
     label: '지역',
-    title: '어느 지역의 땅을 찾으세요?',
+    title: '어느 지역의 토지를 찾으세요?',
     description: '관심 있는 시도를 모두 골라 주세요. 여러 곳을 함께 볼 수 있어요.',
     multiple: true,
     choices: [
@@ -69,7 +69,7 @@ export const searchSteps: SearchStep[] = [
   {
     key: 'purpose',
     label: '용도',
-    title: '어떤 용도의 땅이 필요하세요?',
+    title: '어떤 용도의 토지가 필요하세요?',
     description: '찾으시는 공급 용도를 골라 주세요.',
     choices: [
       ...purposeChoices,

@@ -36,24 +36,45 @@ export function districtCity(regionName = '', districtName = ''): string {
   )
 }
 
+// 수의계약 주소('시도 사업지구명 동')에서 동만 남깁니다.
+function suuiDong(land: Land, districtName: string): string {
+  return (land.address ?? land.name)
+    .replace(land.regionName ?? '', '')
+    .replace(districtName, '')
+    .trim()
+}
+
 // 네이버 지도 검색어. 수의계약 주소는 '시도 사업지구명 동' 형태라 사업지구명 대신 그 앞의 지역명을 쓰고,
 // 지번이 없을 때만 사업지구명을 동과 함께 지구 위치를 찾는 단서로 씁니다.
 export function naverMapQuery(land: Land): string {
   const number = jibun(land.lotNo)
-  const address = land.address ?? land.name
   if (land.source !== 'lh-suui' || !land.districtName) {
-    return [address, number].filter(Boolean).join(' ')
+    return [land.address ?? land.name, number].filter(Boolean).join(' ')
   }
-  const dong = address
-    .replace(land.regionName ?? '', '')
-    .replace(land.districtName, '')
-    .trim()
+  const dong = suuiDong(land, land.districtName)
   if (number) {
     const city = districtCity(land.regionName, land.districtName)
     return [land.regionName, city, dong, number].filter(Boolean).join(' ')
   }
   const district = land.districtName.replace(/\(.*?\)/g, '').trim()
   return [district, dong].filter(Boolean).join(' ')
+}
+
+// 반경 실거래가 조회(브이월드 주소 검색)에 넘길 주소. 브이월드는 사업지구명을 찾지 못하므로
+// 지번 없는 수의계약 필지도 '시도 지역명 동'으로 넘깁니다.
+export function marketPriceQuery(land: Land): string {
+  if (land.source !== 'lh-suui' || !land.districtName || jibun(land.lotNo)) {
+    return naverMapQuery(land)
+  }
+  const city = districtCity(land.regionName, land.districtName)
+  return [land.regionName, city, suuiDong(land, land.districtName)].filter(Boolean).join(' ')
+}
+
+// public/landtrade-radius.html(주소 기준 반경 실거래가 조회)로 가는 주소입니다.
+// base는 앱이 배포된 경로(import.meta.env.BASE_URL, 예: '/team_9/')입니다.
+export function marketPriceUrl(land: Land, base: string, radiusKm = 3): string {
+  const params = new URLSearchParams({ addr: marketPriceQuery(land), radius: String(radiusKm) })
+  return `${base}landtrade-radius.html?${params}`
 }
 
 export function naverMapUrl(land: Land): string {

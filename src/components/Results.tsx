@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { dateStamp, downloadFile } from '../lib/download'
-import { naverMapUrl } from '../lib/mapLink'
+import { marketPriceUrl, naverMapUrl } from '../lib/mapLink'
 import {
   areaPyeong,
   filterByUse,
@@ -15,6 +15,7 @@ import {
   type SortOrder,
 } from '../lib/search'
 import type { Land } from '../types/land'
+import { LotDetailDialog } from './LotDetailDialog'
 import { RegulationsDialog } from './RegulationsDialog'
 
 const PAGE_SIZE = 20
@@ -50,6 +51,7 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
   const [order, setOrder] = useState<SortOrder>('price')
   const [visible, setVisible] = useState(PAGE_SIZE)
   const [regulationsLand, setRegulationsLand] = useState<Land | null>(null)
+  const [detailLand, setDetailLand] = useState<Land | null>(null)
   const filtered = filterByUse(lands, useKeyword)
   const sorted = sortLands(filtered, order)
   const uses = useNameCounts(lands).slice(0, USE_CHIP_LIMIT)
@@ -137,6 +139,14 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
           const facts = suuiFacts(land)
           return (
             <li key={land.id} className={`land-card ${selected ? 'is-selected' : ''}`}>
+              <a
+                className="market-button"
+                href={marketPriceUrl(land, import.meta.env.BASE_URL)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                3km 내 시세<span className="sr-only"> (새 창)</span> ↗
+              </a>
               <div className="land-description">
                 <div className="land-tags">
                   <span>{land.useName ?? labelFor('purpose', land.purpose)}</span>
@@ -162,6 +172,14 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
                     <input type="checkbox" checked={selected} onChange={() => onToggle(land)} />
                     상세 검토할 필지로 선택
                   </label>
+                  <button
+                    type="button"
+                    className="regulations-button"
+                    aria-haspopup="dialog"
+                    onClick={() => setDetailLand(land)}
+                  >
+                    필지 상세 보기
+                  </button>
                   <button
                     type="button"
                     className="regulations-button"
@@ -225,6 +243,7 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
       <p className="results-note">
         LH 공고·수의계약 목록 기준 참고 정보입니다. 신청 전 반드시 공고문 원문을 확인하세요.
       </p>
+      <LotDetailDialog land={detailLand} onClose={() => setDetailLand(null)} />
       <RegulationsDialog land={regulationsLand} onClose={() => setRegulationsLand(null)} />
     </>
   )
