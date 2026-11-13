@@ -7,13 +7,13 @@ import { SelectedLots } from './components/SelectedLots'
 import { SelectionSummary } from './components/SelectionSummary'
 import { emptyCriteria, searchSteps, toggleChoice } from './config/searchSteps'
 import { lhLands, lhLandsFetchedAt } from './data/lhLands.generated'
-import { loadSelectedLots } from './handoff/selectedLots'
+import { buildPayload, loadSelectedLots, saveSelectedLots } from './handoff/selectedLots'
 import { diagnoseEmpty, searchLands } from './lib/search'
 import type { Land, SearchCriteria } from './types/land'
 
 const landsById = new Map(lhLands.map((land) => [land.id, land]))
 
-// 이전에 넘긴 선택이 있으면 같은 필지가 아직 판매 중일 때만 되살립니다.
+// 저장한 검토 목록에서 아직 판매 중인 필지만 되살립니다.
 function restoreSelection(): string[] {
   return (loadSelectedLots()?.lots ?? []).map((lot) => lot.lotId).filter((id) => landsById.has(id))
 }
@@ -26,6 +26,11 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState<string[]>(restoreSelection)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const selectedLands = selectedIds.map((id) => landsById.get(id)!)
+
+  useEffect(() => {
+    const lands = selectedIds.map((id) => landsById.get(id)!)
+    saveSelectedLots(buildPayload(lands, lhLandsFetchedAt))
+  }, [selectedIds])
 
   function toggleLand(land: Land) {
     setSelectedIds((ids) =>
@@ -125,7 +130,7 @@ export default function App() {
                     <h2 id="results-title" tabIndex={-1} ref={headingRef}>
                       고르신 조건으로 찾아봤어요.
                     </h2>
-                    <p>상세 검토할 필지를 골라 규제·시세 분석으로 넘겨 주세요.</p>
+                    <p>관심 있는 필지를 선택해 검토 목록에 모아 보세요.</p>
                   </div>
                   <Results
                     lands={searchLands(lhLands, criteria)}

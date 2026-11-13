@@ -578,11 +578,6 @@
   border-radius: 30px;
   min-height: 46px;
 }
-.design-template .handoff-button {
-  gap: 8px;
-  padding-inline: 12px;
-  font-size: 12px;
-}
 .design-template .land-card {
   background: #fff;
   border-radius: 12px;
