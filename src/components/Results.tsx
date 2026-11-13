@@ -15,6 +15,7 @@ import {
   type SortOrder,
 } from '../lib/search'
 import type { Land } from '../types/land'
+import { LotDetailDialog } from './LotDetailDialog'
 import { RegulationsDialog } from './RegulationsDialog'
 
 const PAGE_SIZE = 20
@@ -50,6 +51,7 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
   const [order, setOrder] = useState<SortOrder>('price')
   const [visible, setVisible] = useState(PAGE_SIZE)
   const [regulationsLand, setRegulationsLand] = useState<Land | null>(null)
+  const [detailLand, setDetailLand] = useState<Land | null>(null)
   const filtered = filterByUse(lands, useKeyword)
   const sorted = sortLands(filtered, order)
   const uses = useNameCounts(lands).slice(0, USE_CHIP_LIMIT)
@@ -166,6 +168,14 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
                     type="button"
                     className="regulations-button"
                     aria-haspopup="dialog"
+                    onClick={() => setDetailLand(land)}
+                  >
+                    필지 상세 보기
+                  </button>
+                  <button
+                    type="button"
+                    className="regulations-button"
+                    aria-haspopup="dialog"
                     onClick={() => setRegulationsLand(land)}
                   >
                     건축 규제 보기
@@ -215,6 +225,7 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
       <p className="results-note">
         LH 공고·수의계약 목록 기준 참고 정보입니다. 신청 전 반드시 공고문 원문을 확인하세요.
       </p>
+      <LotDetailDialog land={detailLand} onClose={() => setDetailLand(null)} />
       <RegulationsDialog land={regulationsLand} onClose={() => setRegulationsLand(null)} />
     </>
   )
