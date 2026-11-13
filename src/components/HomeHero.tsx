@@ -28,6 +28,8 @@ interface Props {
   onCloseStep: () => void
   onSelect: (index: number, value: string) => void
   onSearch: () => void
+  useKeyword: string
+  onUseKeyword: (keyword: string) => void
 }
 
 export function HomeHero({
@@ -39,6 +41,8 @@ export function HomeHero({
   onCloseStep,
   onSelect,
   onSearch,
+  useKeyword,
+  onUseKeyword,
 }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -73,6 +77,7 @@ export function HomeHero({
           <p>원하는 조건만 골라보세요. 나머지는 넓게 찾아드릴게요.</p>
         </div>
         <form
+          id="search"
           className="hero-search"
           role="search"
           aria-label="토지 조건 검색"
@@ -153,11 +158,23 @@ export function HomeHero({
                 ×
               </button>
             </div>
+            <div className="hero-picker-tabs" role="group" aria-label="검색 조건 항목">
+              {searchSteps.map((item, index) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  aria-pressed={activeStep === index}
+                  onClick={() => onOpenStep(index)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
             <p className="hero-picker-description">{pickerStep.description}</p>
             <form
               onSubmit={(event) => {
                 event.preventDefault()
-                onCloseStep()
+                onSearch()
               }}
             >
               <ChoiceGrid
@@ -165,11 +182,29 @@ export function HomeHero({
                 selected={criteria[pickerStep.key]}
                 onSelect={(value) => onSelect(activeStep, value)}
               />
+              {pickerStep.key === 'purpose' && (
+                <label className="keyword-field">
+                  <span>
+                    용도 단어로 좁히기 <small>(선택)</small>
+                  </span>
+                  <input
+                    type="search"
+                    value={useKeyword}
+                    onChange={(event) => onUseKeyword(event.target.value)}
+                    placeholder="예: 자족시설, 주차장, 준주거"
+                  />
+                </label>
+              )}
               <div className="hero-picker-actions">
                 <span>{summaryLabel(criteria, pickerStep) || prompts[activeStep]}</span>
-                <button type="submit" className="button primary">
-                  선택 완료 <DesignIcon name="arrow-right" />
-                </button>
+                <div className="hero-picker-buttons">
+                  <button type="button" className="button secondary" onClick={onCloseStep}>
+                    선택 완료
+                  </button>
+                  <button type="submit" className="button primary">
+                    토지 찾기 <DesignIcon name="arrow-right" />
+                  </button>
+                </div>
               </div>
             </form>
           </div>
