@@ -640,6 +640,25 @@ dd {
   color: var(--muted);
   font-size: 12px;
 }
+.empty-reason {
+  margin: 14px auto 23px;
+  max-width: 460px;
+  text-align: left;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.empty-reason ul {
+  margin: 8px 0;
+  padding-left: 18px;
+}
+.empty-reason p {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+.empty-reason strong {
+  color: var(--green);
+}
 .check-mark {
   width: 19px;
   height: 19px;

@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { toPyeong } from '../config/searchSteps'
 import { dateStamp, downloadFile } from '../lib/download'
 import { marketPriceUrl, naverMapUrl } from '../lib/mapLink'
 import {
   areaPyeong,
+  type EmptyDiagnosis,
   filterByUse,
   formatPrice,
   labelFor,
@@ -28,6 +30,8 @@ interface Props {
   selectedIds: ReadonlySet<string>
   onToggle: (land: Land) => void
   onEdit: () => void
+  // 결과가 0개일 때 어떤 조건 때문에 비었는지 알려 주는 정보입니다.
+  diagnosis?: EmptyDiagnosis
 }
 
 const manwon = (won: number) => `${Math.round(won / 10_000).toLocaleString('ko-KR')}만 원`
@@ -47,7 +51,68 @@ function suuiFacts(land: Land): string[] {
   ].filter(Boolean)
 }
 
-export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle, onEdit }: Props) {
+const pyeongText = (areaM2: number) => `${Math.round(toPyeong(areaM2)).toLocaleString('ko-KR')}평`
+
+// 어떤 조건 때문에 토지가 없는지, 이 지역에서 가능한 가격·면적 범위가 어디까지인지 알려 줍니다.
+function EmptyReason({ diagnosis }: { diagnosis: EmptyDiagnosis }) {
+  const { poolCount, priceWon, areaM2, budgetOnly, areaOnly, cheapestInArea, largestInBudget } =
+    diagnosis
+  if (poolCount === 0 || !priceWon || !areaM2) {
+    return <p>고른 지역·용도에는 지금 판매 중인 토지가 없어요. 지역이나 용도를 바꿔 보세요.</p>
+  }
+  return (
+    <div className="empty-reason">
+      <p>
+        고른 지역·용도에는 판매 중인 토지가 <strong>{poolCount.toLocaleString('ko-KR')}개</strong>{' '}
+        있어요.
+      </p>
+      <ul>
+        <li>
+          가격은 <strong>{formatPrice(priceWon.min)}</strong>부터 {formatPrice(priceWon.max)}
+          까지예요.
+        </li>
+        <li>
+          면적은 <strong>{pyeongText(areaM2.min)}</strong>부터 {pyeongText(areaM2.max)}까지예요.
+        </li>
+        {budgetOnly && (
+          <li>
+            ‘{budgetOnly.label}’만 보면 {budgetOnly.count.toLocaleString('ko-KR')}개가 있어요.
+          </li>
+        )}
+        {areaOnly && (
+          <li>
+            ‘{areaOnly.label}’만 보면 {areaOnly.count.toLocaleString('ko-KR')}개가 있어요.
+          </li>
+        )}
+      </ul>
+      {budgetOnly && areaOnly && budgetOnly.count > 0 && areaOnly.count > 0 && (
+        <p>두 조건을 함께 만족하는 토지는 없어요.</p>
+      )}
+      {areaOnly && cheapestInArea && (
+        <p>
+          ‘{areaOnly.label}’ 중 가장 저렴한 토지는{' '}
+          <strong>{formatPrice(cheapestInArea.priceWon)}</strong>(
+          {pyeongText(cheapestInArea.areaM2)}) 이에요. 예산을 이 금액 이상으로 올려 보세요.
+        </p>
+      )}
+      {budgetOnly && largestInBudget && (!areaOnly || areaOnly.count === 0) && (
+        <p>
+          ‘{budgetOnly.label}’ 중 가장 넓은 토지는 {pyeongText(largestInBudget.areaM2)}이에요.
+        </p>
+      )}
+    </div>
+  )
+}
+
+export function Results({
+  lands,
+  useKeyword,
+  onUseKeyword,
+  selectedIds,
+  onToggle,
+  onEdit,
+  diagnosis,
+}: Props) {
   const [order, setOrder] = useState<SortOrder>('price')
   const [visible, setVisible] = useState(PAGE_SIZE)
   const [regulationsLand, setRegulationsLand] = useState<Land | null>(null)
@@ -63,7 +128,11 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
           ⌕
         </span>
         <h3>이 조건에 맞는 토지가 없어요</h3>
-        <p>지역을 더 고르거나 예산·면적 범위를 넓혀 다시 찾아보세요.</p>
+        {diagnosis ? (
+          <EmptyReason diagnosis={diagnosis} />
+        ) : (
+          <p>지역을 더 고르거나 예산·면적 범위를 넓혀 다시 찾아보세요.</p>
+        )}
         <button type="button" className="button secondary" onClick={onEdit}>
           조건 바꾸기
         </button>
