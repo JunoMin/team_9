@@ -888,6 +888,31 @@ dd {
   border-top: 0;
   padding-top: 0;
 }
+.lot-detail {
+  display: grid;
+  gap: 0;
+}
+.lot-detail > div {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid #eef1ea;
+  font-size: 13px;
+}
+.lot-detail dt {
+  color: #6f7a70;
+}
+.lot-detail dd {
+  overflow-wrap: anywhere;
+}
+.lot-detail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 16px;
+  font-size: 13px;
+}
 .more-button {
   width: 100%;
   margin-top: 14px;
