@@ -25,3 +25,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local regulation collector settings contain workstation paths.
+config/regulation-refresh.local.json
+__pycache__/

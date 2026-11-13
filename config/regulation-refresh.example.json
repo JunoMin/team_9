@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "time": "03:00",
+  "intervalDays": 1,
+  "timezone": "Asia/Seoul",
+  "startDate": "1900-01-01",
+  "statuses": ["공고중", "상담요청"],
+  "workbook": "../outputs/01a1d25a/LH_토지매각_지역별_공통양식_수집대장.xlsx",
+  "outputDirectory": "../outputs/regulation-refresh",
+  "requestDelaySeconds": 0.5,
+  "maxDownloadMB": 512,
+  "pythonExecutable": "",
+  "nodeExecutable": "",
+  "artifactNodeModules": ""
+}
