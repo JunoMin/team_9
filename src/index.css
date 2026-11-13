@@ -791,6 +791,31 @@ dd {
 .regulations-button:hover {
   background: #f0f6ee;
 }
+/* 필지 카드 오른쪽 위에서 반경 3km 실거래가 조회 페이지를 엽니다. */
+.land-card {
+  position: relative;
+}
+.market-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  background: var(--green);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.market-button:hover {
+  background: #194e38;
+}
+.land-card > .land-numbers {
+  padding-top: 46px;
+}
 .regulations-dialog {
   width: min(560px, calc(100vw - 32px));
   max-height: calc(100dvh - 48px);
@@ -842,6 +867,31 @@ dd {
 .regulations-dialog .land-regulations {
   border-top: 0;
   padding-top: 0;
+}
+.lot-detail {
+  display: grid;
+  gap: 0;
+}
+.lot-detail > div {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid #eef1ea;
+  font-size: 13px;
+}
+.lot-detail dt {
+  color: #6f7a70;
+}
+.lot-detail dd {
+  overflow-wrap: anywhere;
+}
+.lot-detail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 16px;
+  font-size: 13px;
 }
 .more-button {
   width: 100%;
@@ -1102,9 +1152,18 @@ dd {
     flex-direction: column;
     gap: 16px;
   }
-  .land-numbers {
+  .land-numbers,
+  .land-card > .land-numbers {
     border-top: 1px solid #edf0e9;
     padding-top: 13px;
+  }
+  .market-button {
+    top: 14px;
+    right: 14px;
+  }
+  .land-tags {
+    min-height: 34px;
+    padding-right: 116px;
   }
   .land-numbers > div {
     justify-content: space-between;
