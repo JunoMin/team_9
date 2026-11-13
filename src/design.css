@@ -119,10 +119,12 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: #052a2547;
+  /* 밝은 도시 사진 위에서도 제목·안내 문구가 읽히도록, 글자가 놓이는 위쪽·가운데를 더 어둡게 덮습니다. */
+  background: linear-gradient(180deg, #052a2573 0%, #052a258c 45%, #052a2566 100%);
   z-index: -1;
 }
 .hero-copy {
+  text-shadow: 0 1px 12px #021a1699;
   text-align: center;
   margin: 0 0 38px;
 }
