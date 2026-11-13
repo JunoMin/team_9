@@ -85,7 +85,7 @@ export function FeaturedLands({ lands, selectedIds, onToggle, onSearch }: Props)
                 className="save-land"
                 type="button"
                 aria-pressed={selectedIds.has(land.id)}
-                aria-label={`${land.name} 검토할 필지로 선택`}
+                aria-label={`${land.name} 즐겨찾기 ${selectedIds.has(land.id) ? '해제' : '추가'}`}
                 onClick={() => onToggle(land)}
               >
                 <DesignIcon name="bookmark-simple" />
