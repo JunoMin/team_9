@@ -186,7 +186,12 @@ test('원화 가격을 손실 없이 읽기 쉬운 단위로 표시한다', () =
   assert.equal(formatPrice(230_000_000), '2억 3,000만 원')
   assert.equal(formatPrice(300_000_000), '3억 원')
   assert.equal(formatPrice(90_000_000), '9,000만 원')
-  assert.equal(formatPrice(10_001), '1만 1 원')
+  // 만 원 미만은 반올림한다.
+  assert.equal(formatPrice(231_163_800), '2억 3,116만 원')
+  assert.equal(formatPrice(231_165_000), '2억 3,117만 원')
+  assert.equal(formatPrice(99_996_000), '1억 원')
+  assert.equal(formatPrice(10_001), '1만 원')
+  assert.equal(formatPrice(4_999), '0 원')
   assert.equal(formatPrice(0), '0 원')
 })
 

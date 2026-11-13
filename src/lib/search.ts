@@ -113,14 +113,14 @@ export function sortLands(lands: readonly Land[], order: SortOrder): Land[] {
   return [...lands].sort((a, b) => key(a) - key(b) || a.id.localeCompare(b.id))
 }
 
+// 화면에는 만 원 미만을 반올림해 '2억 3,116만 원'처럼 보여 줍니다. 원 단위 정확한 값은 CSV·JSON에 남습니다.
 export function formatPrice(priceWon: number): string {
-  const hundredMillion = Math.floor(priceWon / 100_000_000)
-  const tenThousand = Math.floor((priceWon % 100_000_000) / 10_000)
-  const remainder = priceWon % 10_000
+  const manwon = Math.round(priceWon / 10_000)
+  const hundredMillion = Math.floor(manwon / 10_000)
+  const tenThousand = manwon % 10_000
   const parts = [
     hundredMillion ? `${hundredMillion.toLocaleString('ko-KR')}억` : '',
     tenThousand ? `${tenThousand.toLocaleString('ko-KR')}만` : '',
-    remainder ? remainder.toLocaleString('ko-KR') : '',
   ].filter(Boolean)
   return `${parts.join(' ') || '0'} 원`
 }
