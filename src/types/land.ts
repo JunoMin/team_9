@@ -54,6 +54,8 @@ export interface SuuiDetail {
   paymentMonths?: number
   usableFrom?: string
   brokerAllowed: boolean
+  // LH 내집어디 지도에서 이 필지 위치를 여는 주소입니다. 기업·비축토지 등은 LH가 제공하지 않아 없습니다.
+  lhMapUrl?: string
 }
 
 export type LandSource = 'lh-notice' | 'lh-suui'

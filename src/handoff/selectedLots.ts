@@ -78,7 +78,7 @@ export function saveSelectedLots(payload: SelectedLotsPayload) {
   try {
     localStorage.setItem(SELECTED_LOTS_STORAGE_KEY, JSON.stringify(payload))
   } catch {
-    // 사생활 보호 모드 등에서는 JSON 내려받기로만 넘깁니다.
+    // 사생활 보호 모드 등에서는 저장되지 않습니다.
   }
 }
 

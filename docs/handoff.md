@@ -5,10 +5,9 @@ PRD Section 3 기준으로 0~3단계(시행지침 등록, 조건 입력, 후보 
 
 ## 3단계 출력: 선택 필지 JSON
 
-사용자가 결과 목록에서 필지를 고르고 **규제·시세 분석으로 넘기기**를 누르면 두 곳에 같은 내용이 저장됩니다.
+사용자가 결과 목록에서 필지를 고르고 **규제·시세 분석으로 넘기기**를 누르면 브라우저에 저장됩니다.
 
 - 브라우저 `localStorage`의 `team9.selectedLots.v1` 키: 같은 사이트의 A02·A03 화면은 `loadSelectedLots()`로 읽습니다.
-- `selected-lots-YYYYMMDD.json` 파일 내려받기: 화면 밖(파이썬, Dify 등)에서 처리할 때 씁니다.
 
 타입 정의와 읽기 함수는 `src/handoff/selectedLots.ts`에 있습니다.
 
