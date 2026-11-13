@@ -65,7 +65,7 @@ export function HomeHero({
       <div className="hero-scene">
         <img
           className="hero-landscape"
-          src={`${import.meta.env.BASE_URL}images/landscape-hero.webp`}
+          src={`${import.meta.env.BASE_URL}images/gwanggyo-hero.webp`}
           width="1800"
           height="600"
           fetchPriority="high"
@@ -111,7 +111,9 @@ export function HomeHero({
           </button>
         </form>
         <p className="hero-search-hint">선택하지 않은 조건은 전체로 검색해요.</p>
-        <span className="hero-image-note">AI로 만든 소개용 풍경 · 실제 공급 필지와 무관</span>
+        <span className="hero-image-note">
+          사진: 광교호수공원 · Park Areum, 공공누리 제1유형 · 실제 공급 필지와 무관
+        </span>
       </div>
       {!compact && (
         <div className="hero-assurances">

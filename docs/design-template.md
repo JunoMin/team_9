@@ -33,7 +33,7 @@ Landfolk의 풍경 중심 첫 화면, 짙은 초록색, 넓은 여백을 토지 
 
 ## 이미지·아이콘
 
-- `public/images/landscape-hero.webp`: AI로 생성한 소개용 풍경. 실제 공급 필지 사진이 아니며 화면에도 이를 표시합니다. 토지 카드에 확인되지 않은 사진·위치 이미지를 붙이지 않습니다.
+- `public/images/gwanggyo-hero.webp`: LH가 조성한 광교신도시의 광교호수공원 항공사진(1800×600으로 잘라 씀). 원본은 [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gwanggyo_Lake_Park,_Yeongtong_District.jpg), 촬영 Park Areum, 공공누리 제1유형(출처 표시 시 상업적 이용·변경 가능)이며 화면에 출처를 표시합니다. 실제 공급 필지 사진이 아닙니다.
 - `public/icons/`: [Phosphor Icons](https://github.com/phosphor-icons/core)의 regular 아이콘입니다. MIT 라이선스는 같은 폴더의 `LICENSE`에 있습니다. 새 의존성 없이 필요한 아이콘만 사용합니다.
 - 제목의 [Noto Serif KR](https://notofonts.github.io/noto-docs/specimen/NotoSerifCJKkr/)은 Google Fonts에서 불러오며, 본문은 기존 Noto Sans KR을 유지합니다.
 
