@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Brand } from './components/Brand'
 import { ChoiceGrid } from './components/ChoiceGrid'
+import { FeaturedLands } from './components/FeaturedLands'
+import { DesignIcon, HomeHero } from './components/HomeHero'
 import { Results } from './components/Results'
 import { SelectedLots } from './components/SelectedLots'
 import { SelectionSummary } from './components/SelectionSummary'
@@ -31,6 +33,8 @@ export default function App() {
   const [useKeyword, setUseKeyword] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>(restoreSelection)
   const headingRef = useRef<HTMLHeadingElement>(null)
+  const searchPanelRef = useRef<HTMLElement>(null)
+  const previousView = useRef({ current, showResults })
   const step = searchSteps[current]
   const hasSelection = isStepDone(criteria, step)
   const selectedLands = selectedIds.map((id) => landsById.get(id)!)
@@ -43,6 +47,13 @@ export default function App() {
 
   // 단계 전환을 키보드·스크린 리더 사용자에게도 알려 줍니다.
   useEffect(() => {
+    if (
+      previousView.current.current !== current ||
+      previousView.current.showResults !== showResults
+    ) {
+      searchPanelRef.current?.scrollIntoView({ block: 'start' })
+    }
+    previousView.current = { current, showResults }
     headingRef.current?.focus({ preventScroll: true })
   }, [current, showResults])
 
@@ -62,136 +73,156 @@ export default function App() {
   }
 
   return (
-    <>
+    <div className="design-template">
       <a className="skip-link" href="#main">
         본문으로 바로가기
       </a>
       <header className="site-header">
         <div className="header-inner">
-          <Brand />
-          <div className="header-meta">
-            <span>선택으로 찾는 나의 토지</span>
-            <span className="template-badge">PoC</span>
-          </div>
+          <a className="brand-link" href="#main" aria-label="내땅어디 홈">
+            <Brand />
+          </a>
+          <nav className="header-navigation" aria-label="주요 메뉴">
+            <a href="#available">공급 토지 둘러보기</a>
+            <a href="#search">조건으로 찾기</a>
+          </nav>
+          <a className="header-saved" href="#saved">
+            <DesignIcon name="bookmark-simple" /> 검토할 필지 <span>{selectedIds.length}</span>
+          </a>
         </div>
       </header>
-      <main id="main" className="page-shell">
-        <section className="hero" aria-labelledby="page-title">
-          <h1 id="page-title">나에게 맞는 토지 찾기</h1>
-          <p>복잡한 검색 대신, 네 가지 조건만 골라보세요.</p>
-        </section>
-        <div className="workspace">
-          <section className="search-panel" aria-labelledby="step-title">
-            <StepNavigation
-              criteria={criteria}
-              current={showResults ? -1 : current}
-              onNavigate={edit}
-            />
-            <div className="search-content">
-              <div className="question-heading">
-                <p className="step-caption">
-                  {showResults ? '선택 완료' : `STEP 0${current + 1}`}
-                  <span>{showResults ? '맞춤 결과' : `${current + 1} / 4`}</span>
-                </p>
-                <h2 id="step-title" tabIndex={-1} ref={headingRef}>
-                  {showResults ? '고르신 조건으로 찾아봤어요.' : step.title}
-                </h2>
-                <p>
-                  {showResults
-                    ? '상세 검토할 필지를 골라 규제·시세 분석으로 넘겨 주세요.'
-                    : step.description}
-                </p>
-              </div>
-              {showResults ? (
-                <Results
-                  lands={searchLands(lhLands, criteria)}
-                  useKeyword={useKeyword}
-                  onUseKeyword={setUseKeyword}
-                  selectedIds={new Set(selectedIds)}
-                  onToggle={toggleLand}
-                  onEdit={() => edit(2)}
-                />
-              ) : (
-                <form
-                  onSubmit={(event) => {
-                    event.preventDefault()
-                    next()
-                  }}
-                >
-                  <ChoiceGrid
-                    step={step}
-                    selected={criteria[step.key]}
-                    onSelect={(value) =>
-                      setCriteria((previous) => ({
-                        ...previous,
-                        [step.key]: toggleChoice(previous[step.key], value, step.multiple),
-                      }))
-                    }
-                  />
-                  {step.key === 'purpose' && (
-                    <label className="keyword-field">
-                      <span>
-                        용도 단어로 좁히기 <small>(선택)</small>
-                      </span>
-                      <input
-                        type="search"
-                        value={useKeyword}
-                        onChange={(event) => setUseKeyword(event.target.value)}
-                        placeholder="예: 자족시설, 주차장, 준주거"
-                      />
-                    </label>
-                  )}
-                  <div className="form-actions">
-                    <span>
-                      {current === 0 ? (
-                        <span className="selection-hint">
-                          {step.multiple ? '여러 곳을 고를 수 있어요' : '하나를 선택해 주세요'}
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          className="button previous"
-                          onClick={() => edit(current - 1)}
-                        >
-                          ← 이전
-                        </button>
-                      )}
-                    </span>
-                    <button type="submit" className="button primary" disabled={!hasSelection}>
-                      {current === 3 ? '결과 보기' : '다음'}
-                      <span aria-hidden="true">→</span>
-                    </button>
-                  </div>
-                </form>
-              )}
+      <main id="main">
+        <HomeHero criteria={criteria} landCount={lhLands.length} />
+        <div className="page-shell">
+          <FeaturedLands lands={lhLands} selectedIds={new Set(selectedIds)} onToggle={toggleLand} />
+          <div className="search-intro" id="search">
+            <div>
+              <p className="section-eyebrow">FIND YOUR OWN PLACE</p>
+              <h2>좋은 땅의 기준은, 나에게 맞는 땅.</h2>
             </div>
-          </section>
-          <div className="side-column">
-            <SelectionSummary criteria={criteria} onEdit={edit} onReset={reset} />
-            <SelectedLots
-              lands={selectedLands}
-              onRemove={toggleLand}
-              onClear={() => setSelectedIds([])}
-            />
+            <p>
+              지역, 용도, 예산, 면적.
+              <br />네 번의 선택으로 가능성을 좁혀보세요.
+            </p>
           </div>
-        </div>
-        <div className="demo-notice">
-          <span className="notice-symbol" aria-hidden="true">
-            i
-          </span>
-          <p>
-            <strong>
-              LH 공고 데이터 기준 {new Date(lhLandsFetchedAt).toLocaleDateString('ko-KR')}
-            </strong>
-            판매 중인 공고(공고중·접수중)와 선착순 수의계약 토지입니다. 결과는 참고용이며 매수 판단
-            전 공고문 원문을 확인하세요.
-          </p>
+          <div className="workspace">
+            <section className="search-panel" aria-labelledby="step-title" ref={searchPanelRef}>
+              <StepNavigation
+                criteria={criteria}
+                current={showResults ? -1 : current}
+                onNavigate={edit}
+              />
+              <div className="search-content">
+                <div className="question-heading">
+                  <p className="step-caption">
+                    {showResults ? '선택 완료' : `STEP 0${current + 1}`}
+                    <span>{showResults ? '맞춤 결과' : `${current + 1} / 4`}</span>
+                  </p>
+                  <h2 id="step-title" tabIndex={-1} ref={headingRef}>
+                    {showResults ? '고르신 조건으로 찾아봤어요.' : step.title}
+                  </h2>
+                  <p>
+                    {showResults
+                      ? '상세 검토할 필지를 골라 규제·시세 분석으로 넘겨 주세요.'
+                      : step.description}
+                  </p>
+                </div>
+                {showResults ? (
+                  <Results
+                    lands={searchLands(lhLands, criteria)}
+                    useKeyword={useKeyword}
+                    onUseKeyword={setUseKeyword}
+                    selectedIds={new Set(selectedIds)}
+                    onToggle={toggleLand}
+                    onEdit={() => edit(2)}
+                  />
+                ) : (
+                  <form
+                    onSubmit={(event) => {
+                      event.preventDefault()
+                      next()
+                    }}
+                  >
+                    <ChoiceGrid
+                      step={step}
+                      selected={criteria[step.key]}
+                      onSelect={(value) =>
+                        setCriteria((previous) => ({
+                          ...previous,
+                          [step.key]: toggleChoice(previous[step.key], value, step.multiple),
+                        }))
+                      }
+                    />
+                    {step.key === 'purpose' && (
+                      <label className="keyword-field">
+                        <span>
+                          용도 단어로 좁히기 <small>(선택)</small>
+                        </span>
+                        <input
+                          type="search"
+                          value={useKeyword}
+                          onChange={(event) => setUseKeyword(event.target.value)}
+                          placeholder="예: 자족시설, 주차장, 준주거"
+                        />
+                      </label>
+                    )}
+                    <div className="form-actions">
+                      <span>
+                        {current === 0 ? (
+                          <span className="selection-hint">
+                            {step.multiple ? '여러 곳을 고를 수 있어요' : '하나를 선택해 주세요'}
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            className="button previous"
+                            onClick={() => edit(current - 1)}
+                          >
+                            ← 이전
+                          </button>
+                        )}
+                      </span>
+                      <button type="submit" className="button primary" disabled={!hasSelection}>
+                        {current === 3 ? '결과 보기' : '다음'}
+                        <span aria-hidden="true">→</span>
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </section>
+            <div className="side-column">
+              <SelectionSummary criteria={criteria} onEdit={edit} onReset={reset} />
+              <div id="saved">
+                <SelectedLots
+                  lands={selectedLands}
+                  onRemove={toggleLand}
+                  onClear={() => setSelectedIds([])}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="demo-notice">
+            <span className="notice-symbol" aria-hidden="true">
+              i
+            </span>
+            <p>
+              <strong>
+                LH 공고 데이터 기준 {new Date(lhLandsFetchedAt).toLocaleDateString('ko-KR')}
+              </strong>
+              판매 중인 공고(공고중·접수중)와 선착순 수의계약 토지입니다. 결과는 참고용이며 매수
+              판단 전 공고문 원문을 확인하세요.
+            </p>
+          </div>
         </div>
       </main>
       <footer className="site-footer">
-        <span>TEAM 09 · 내땅어디</span>
-        <p>함께 만들어가는 토지 맞춤 검색기</p>
+        <div>
+          <Brand />
+          <p>나의 내일이 시작되는 땅을 찾습니다.</p>
+        </div>
+        <span>TEAM 09 · 토지 맞춤 검색기</span>
       </footer>
-    </>
+    </div>
   )
 }
