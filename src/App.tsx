@@ -30,6 +30,8 @@ export default function App() {
   const [criteria, setCriteria] = useState<SearchCriteria>({ ...emptyCriteria })
   const [current, setCurrent] = useState(0)
   const [showResults, setShowResults] = useState(false)
+  const [quickResults, setQuickResults] = useState(false)
+  const [activeHeroStep, setActiveHeroStep] = useState<number | null>(null)
   const [useKeyword, setUseKeyword] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>(restoreSelection)
   const headingRef = useRef<HTMLHeadingElement>(null)
@@ -51,21 +53,57 @@ export default function App() {
       previousView.current.current !== current ||
       previousView.current.showResults !== showResults
     ) {
-      searchPanelRef.current?.scrollIntoView({ block: 'start' })
+      if (!quickResults) searchPanelRef.current?.scrollIntoView({ block: 'start' })
+      headingRef.current?.focus({ preventScroll: true })
     }
     previousView.current = { current, showResults }
-    headingRef.current?.focus({ preventScroll: true })
-  }, [current, showResults])
+  }, [current, showResults, quickResults])
+
+  function returnHome() {
+    // 홈 링크의 위치 이동만 사용하고, 단계 전환용 스크롤은 실행하지 않습니다.
+    previousView.current = { current: 0, showResults: false }
+    setCurrent(0)
+    setShowResults(false)
+    setQuickResults(false)
+  }
 
   function edit(index: number) {
+    if (quickResults) {
+      setActiveHeroStep(index)
+      return
+    }
     setCurrent(index)
     setShowResults(false)
   }
   function reset() {
-    setCriteria({ ...emptyCriteria })
+    setCriteria(
+      quickResults
+        ? { region: ['any'], purpose: ['any'], budget: ['any'], area: ['any'] }
+        : { ...emptyCriteria },
+    )
     setUseKeyword('')
-    edit(0)
+    if (!quickResults) edit(0)
   }
+  function searchFromHero() {
+    setCriteria((previous) => ({
+      region: previous.region.length ? previous.region : ['any'],
+      purpose: previous.purpose.length ? previous.purpose : ['any'],
+      budget: previous.budget.length ? previous.budget : ['any'],
+      area: previous.area.length ? previous.area : ['any'],
+    }))
+    setUseKeyword('')
+    setQuickResults(true)
+    setShowResults(true)
+  }
+
+  function selectFromHero(index: number, value: string) {
+    const field = searchSteps[index]
+    setCriteria((previous) => {
+      const values = toggleChoice(previous[field.key], value, field.multiple)
+      return { ...previous, [field.key]: quickResults && !values.length ? ['any'] : values }
+    })
+  }
+
   function next() {
     if (!hasSelection) return
     if (current < searchSteps.length - 1) setCurrent(current + 1)
@@ -79,7 +117,7 @@ export default function App() {
       </a>
       <header className="site-header">
         <div className="header-inner">
-          <a className="brand-link" href="#main" aria-label="내땅어디 홈">
+          <a className="brand-link" href="#main" aria-label="내땅어디 홈" onClick={returnHome}>
             <Brand />
           </a>
           <nav className="header-navigation" aria-label="주요 메뉴">
@@ -92,26 +130,45 @@ export default function App() {
         </div>
       </header>
       <main id="main">
-        <HomeHero criteria={criteria} landCount={lhLands.length} />
+        <HomeHero
+          criteria={criteria}
+          landCount={lhLands.length}
+          compact={quickResults}
+          activeStep={activeHeroStep}
+          onOpenStep={setActiveHeroStep}
+          onCloseStep={() => setActiveHeroStep(null)}
+          onSelect={selectFromHero}
+          onSearch={searchFromHero}
+        />
         <div className="page-shell">
-          <FeaturedLands lands={lhLands} selectedIds={new Set(selectedIds)} onToggle={toggleLand} />
-          <div className="search-intro" id="search">
-            <div>
-              <p className="section-eyebrow">FIND YOUR OWN PLACE</p>
-              <h2>좋은 땅의 기준은, 나에게 맞는 땅.</h2>
+          {!quickResults && (
+            <FeaturedLands
+              lands={lhLands}
+              selectedIds={new Set(selectedIds)}
+              onToggle={toggleLand}
+            />
+          )}
+          {!quickResults && (
+            <div className="search-intro">
+              <div>
+                <p className="section-eyebrow">FIND YOUR OWN PLACE</p>
+                <h2>좋은 땅의 기준은, 나에게 맞는 땅.</h2>
+              </div>
+              <p>
+                지역, 용도, 예산, 면적.
+                <br />네 번의 선택으로 가능성을 좁혀보세요.
+              </p>
             </div>
-            <p>
-              지역, 용도, 예산, 면적.
-              <br />네 번의 선택으로 가능성을 좁혀보세요.
-            </p>
-          </div>
-          <div className="workspace">
+          )}
+          <div id="search" className={`workspace ${quickResults ? 'quick-results' : ''}`}>
             <section className="search-panel" aria-labelledby="step-title" ref={searchPanelRef}>
-              <StepNavigation
-                criteria={criteria}
-                current={showResults ? -1 : current}
-                onNavigate={edit}
-              />
+              {!quickResults && (
+                <StepNavigation
+                  criteria={criteria}
+                  current={showResults ? -1 : current}
+                  onNavigate={edit}
+                />
+              )}
               <div className="search-content">
                 <div className="question-heading">
                   <p className="step-caption">
@@ -202,6 +259,13 @@ export default function App() {
               </div>
             </div>
           </div>
+          {quickResults && (
+            <FeaturedLands
+              lands={lhLands}
+              selectedIds={new Set(selectedIds)}
+              onToggle={toggleLand}
+            />
+          )}
           <div className="demo-notice">
             <span className="notice-symbol" aria-hidden="true">
               i
