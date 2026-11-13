@@ -15,9 +15,10 @@ interface Props {
   lands: Land[]
   selectedIds: ReadonlySet<string>
   onToggle: (land: Land) => void
+  onSearch: () => void
 }
 
-export function FeaturedLands({ lands, selectedIds, onToggle }: Props) {
+export function FeaturedLands({ lands, selectedIds, onToggle, onSearch }: Props) {
   const [category, setCategory] = useState(0)
   const [detailLand, setDetailLand] = useState<Land | null>(null)
   const purposes = categories[category].purposes
@@ -45,9 +46,15 @@ export function FeaturedLands({ lands, selectedIds, onToggle }: Props) {
           <h2 id="featured-title">현재 공급 중인 토지</h2>
           <p>어떤 가능성이 기다리고 있을까요? 관심 있는 토지부터 살펴보세요.</p>
         </div>
-        <a className="section-link" href="#search">
+        <button
+          type="button"
+          className="section-link"
+          onClick={onSearch}
+          aria-haspopup="dialog"
+          aria-controls="hero-picker"
+        >
           내 조건으로 찾기 <DesignIcon name="arrow-right" />
-        </a>
+        </button>
       </div>
       <div className="featured-toolbar">
         <div className="featured-filters" role="group" aria-label="공급 토지 용도">

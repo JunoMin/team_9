@@ -56,13 +56,16 @@
   gap: 34px;
   margin-left: auto;
 }
-.header-navigation a {
+.header-navigation :is(a, button) {
+  background: transparent;
+  border: 0;
+  color: inherit;
   font-size: 13px;
   font-weight: 500;
   text-decoration: none;
   padding: 12px 0;
 }
-.header-navigation a:hover {
+.header-navigation :is(a, button):hover {
   text-decoration: underline;
   text-underline-offset: 5px;
 }
@@ -284,6 +287,9 @@
   line-height: 1.7;
 }
 .design-template .section-link {
+  background: transparent;
+  border: 0;
+  color: inherit;
   display: flex;
   align-items: center;
   gap: 18px;
@@ -1240,5 +1246,62 @@ body:has(.hero-picker[open]) {
   .hero-picker-actions {
     gap: 10px;
     padding-top: 14px;
+  }
+}
+
+/* Every search entry opens the same condition picker. */
+.hero-picker-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 5px;
+  margin-top: 22px;
+  background: var(--design-sage);
+  border-radius: 12px;
+}
+.hero-picker-tabs button {
+  padding: 12px 8px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.hero-picker-tabs button[aria-pressed='true'] {
+  background: white;
+  border-color: var(--border);
+  color: var(--green);
+  box-shadow: 0 2px 5px #133e3509;
+}
+.hero-picker-buttons {
+  display: flex;
+  gap: 8px;
+}
+.design-template .saved-section .side-column {
+  display: block;
+}
+.design-template .saved-section .selected-panel {
+  max-width: 680px;
+  margin: 0 auto;
+}
+@media (max-width: 600px) {
+  .hero-picker-tabs button {
+    padding: 11px 4px;
+    font-size: 12px;
+  }
+  .hero-picker-actions {
+    flex-wrap: wrap;
+  }
+  .hero-picker-actions > span {
+    width: 100%;
+  }
+  .hero-picker-buttons {
+    width: 100%;
+  }
+  .hero-picker-buttons .button {
+    min-width: 0;
+    padding-inline: 14px;
+    flex: 1;
   }
 }

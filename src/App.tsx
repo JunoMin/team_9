@@ -1,19 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Brand } from './components/Brand'
-import { ChoiceGrid } from './components/ChoiceGrid'
 import { FeaturedLands } from './components/FeaturedLands'
 import { DesignIcon, HomeHero } from './components/HomeHero'
 import { Results } from './components/Results'
 import { SelectedLots } from './components/SelectedLots'
 import { SelectionSummary } from './components/SelectionSummary'
-import { StepNavigation } from './components/StepNavigation'
-import {
-  emptyCriteria,
-  isComplete,
-  isStepDone,
-  searchSteps,
-  toggleChoice,
-} from './config/searchSteps'
+import { emptyCriteria, searchSteps, toggleChoice } from './config/searchSteps'
 import { lhLands, lhLandsFetchedAt } from './data/lhLands.generated'
 import { loadSelectedLots } from './handoff/selectedLots'
 import { diagnoseEmpty, searchLands } from './lib/search'
@@ -28,17 +20,11 @@ function restoreSelection(): string[] {
 
 export default function App() {
   const [criteria, setCriteria] = useState<SearchCriteria>({ ...emptyCriteria })
-  const [current, setCurrent] = useState(0)
   const [showResults, setShowResults] = useState(false)
-  const [quickResults, setQuickResults] = useState(false)
   const [activeHeroStep, setActiveHeroStep] = useState<number | null>(null)
   const [useKeyword, setUseKeyword] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>(restoreSelection)
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const searchPanelRef = useRef<HTMLElement>(null)
-  const previousView = useRef({ current, showResults })
-  const step = searchSteps[current]
-  const hasSelection = isStepDone(criteria, step)
   const selectedLands = selectedIds.map((id) => landsById.get(id)!)
 
   function toggleLand(land: Land) {
@@ -47,42 +33,18 @@ export default function App() {
     )
   }
 
-  // 단계 전환을 키보드·스크린 리더 사용자에게도 알려 줍니다.
   useEffect(() => {
-    if (
-      previousView.current.current !== current ||
-      previousView.current.showResults !== showResults
-    ) {
-      if (!quickResults) searchPanelRef.current?.scrollIntoView({ block: 'start' })
-      headingRef.current?.focus({ preventScroll: true })
-    }
-    previousView.current = { current, showResults }
-  }, [current, showResults, quickResults])
+    if (showResults) headingRef.current?.focus({ preventScroll: true })
+  }, [showResults])
 
   function returnHome() {
-    // 홈 링크의 위치 이동만 사용하고, 단계 전환용 스크롤은 실행하지 않습니다.
-    previousView.current = { current: 0, showResults: false }
-    setCurrent(0)
     setShowResults(false)
-    setQuickResults(false)
+    setActiveHeroStep(null)
   }
 
-  function edit(index: number) {
-    if (quickResults) {
-      setActiveHeroStep(index)
-      return
-    }
-    setCurrent(index)
-    setShowResults(false)
-  }
   function reset() {
-    setCriteria(
-      quickResults
-        ? { region: ['any'], purpose: ['any'], budget: ['any'], area: ['any'] }
-        : { ...emptyCriteria },
-    )
+    setCriteria({ region: ['any'], purpose: ['any'], budget: ['any'], area: ['any'] })
     setUseKeyword('')
-    if (!quickResults) edit(0)
   }
   function searchFromHero() {
     setCriteria((previous) => ({
@@ -91,23 +53,17 @@ export default function App() {
       budget: previous.budget.length ? previous.budget : ['any'],
       area: previous.area.length ? previous.area : ['any'],
     }))
-    setUseKeyword('')
-    setQuickResults(true)
+    setActiveHeroStep(null)
     setShowResults(true)
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }
 
   function selectFromHero(index: number, value: string) {
     const field = searchSteps[index]
     setCriteria((previous) => {
       const values = toggleChoice(previous[field.key], value, field.multiple)
-      return { ...previous, [field.key]: quickResults && !values.length ? ['any'] : values }
+      return { ...previous, [field.key]: showResults && !values.length ? ['any'] : values }
     })
-  }
-
-  function next() {
-    if (!hasSelection) return
-    if (current < searchSteps.length - 1) setCurrent(current + 1)
-    else if (isComplete(criteria)) setShowResults(true)
   }
 
   return (
@@ -122,7 +78,14 @@ export default function App() {
           </a>
           <nav className="header-navigation" aria-label="주요 메뉴">
             <a href="#available">공급 토지 둘러보기</a>
-            <a href="#search">조건으로 찾기</a>
+            <button
+              type="button"
+              onClick={() => setActiveHeroStep(0)}
+              aria-haspopup="dialog"
+              aria-controls="hero-picker"
+            >
+              조건으로 찾기
+            </button>
           </nav>
           <a className="header-saved" href="#saved">
             <DesignIcon name="bookmark-simple" /> 검토할 필지 <span>{selectedIds.length}</span>
@@ -133,58 +96,37 @@ export default function App() {
         <HomeHero
           criteria={criteria}
           landCount={lhLands.length}
-          compact={quickResults}
+          compact={showResults}
           activeStep={activeHeroStep}
           onOpenStep={setActiveHeroStep}
           onCloseStep={() => setActiveHeroStep(null)}
           onSelect={selectFromHero}
           onSearch={searchFromHero}
+          useKeyword={useKeyword}
+          onUseKeyword={setUseKeyword}
         />
         <div className="page-shell">
-          {!quickResults && (
+          {!showResults && (
             <FeaturedLands
               lands={lhLands}
               selectedIds={new Set(selectedIds)}
               onToggle={toggleLand}
+              onSearch={() => setActiveHeroStep(0)}
             />
           )}
-          {!quickResults && (
-            <div className="search-intro">
-              <div>
-                <p className="section-eyebrow">FIND YOUR OWN PLACE</p>
-                <h2>좋은 땅의 기준은, 나에게 맞는 땅.</h2>
-              </div>
-              <p>
-                지역, 용도, 예산, 면적.
-                <br />네 번의 선택으로 가능성을 좁혀보세요.
-              </p>
-            </div>
-          )}
-          <div id="search" className={`workspace ${quickResults ? 'quick-results' : ''}`}>
-            <section className="search-panel" aria-labelledby="step-title" ref={searchPanelRef}>
-              {!quickResults && (
-                <StepNavigation
-                  criteria={criteria}
-                  current={showResults ? -1 : current}
-                  onNavigate={edit}
-                />
-              )}
-              <div className="search-content">
-                <div className="question-heading">
-                  <p className="step-caption">
-                    {showResults ? '선택 완료' : `STEP 0${current + 1}`}
-                    <span>{showResults ? '맞춤 결과' : `${current + 1} / 4`}</span>
-                  </p>
-                  <h2 id="step-title" tabIndex={-1} ref={headingRef}>
-                    {showResults ? '고르신 조건으로 찾아봤어요.' : step.title}
-                  </h2>
-                  <p>
-                    {showResults
-                      ? '상세 검토할 필지를 골라 규제·시세 분석으로 넘겨 주세요.'
-                      : step.description}
-                  </p>
-                </div>
-                {showResults ? (
+          <div className={showResults ? 'workspace quick-results' : 'saved-section'}>
+            {showResults && (
+              <section className="search-panel" aria-labelledby="results-title">
+                <div className="search-content">
+                  <div className="question-heading">
+                    <p className="step-caption">
+                      검색 결과<span>맞춤 결과</span>
+                    </p>
+                    <h2 id="results-title" tabIndex={-1} ref={headingRef}>
+                      고르신 조건으로 찾아봤어요.
+                    </h2>
+                    <p>상세 검토할 필지를 골라 규제·시세 분석으로 넘겨 주세요.</p>
+                  </div>
                   <Results
                     lands={searchLands(lhLands, criteria)}
                     diagnosis={diagnoseEmpty(lhLands, criteria)}
@@ -192,65 +134,15 @@ export default function App() {
                     onUseKeyword={setUseKeyword}
                     selectedIds={new Set(selectedIds)}
                     onToggle={toggleLand}
-                    onEdit={() => edit(2)}
+                    onEdit={() => setActiveHeroStep(0)}
                   />
-                ) : (
-                  <form
-                    onSubmit={(event) => {
-                      event.preventDefault()
-                      next()
-                    }}
-                  >
-                    <ChoiceGrid
-                      step={step}
-                      selected={criteria[step.key]}
-                      onSelect={(value) =>
-                        setCriteria((previous) => ({
-                          ...previous,
-                          [step.key]: toggleChoice(previous[step.key], value, step.multiple),
-                        }))
-                      }
-                    />
-                    {step.key === 'purpose' && (
-                      <label className="keyword-field">
-                        <span>
-                          용도 단어로 좁히기 <small>(선택)</small>
-                        </span>
-                        <input
-                          type="search"
-                          value={useKeyword}
-                          onChange={(event) => setUseKeyword(event.target.value)}
-                          placeholder="예: 자족시설, 주차장, 준주거"
-                        />
-                      </label>
-                    )}
-                    <div className="form-actions">
-                      <span>
-                        {current === 0 ? (
-                          <span className="selection-hint">
-                            {step.multiple ? '여러 곳을 고를 수 있어요' : '하나를 선택해 주세요'}
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            className="button previous"
-                            onClick={() => edit(current - 1)}
-                          >
-                            ← 이전
-                          </button>
-                        )}
-                      </span>
-                      <button type="submit" className="button primary" disabled={!hasSelection}>
-                        {current === 3 ? '결과 보기' : '다음'}
-                        <span aria-hidden="true">→</span>
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            </section>
+                </div>
+              </section>
+            )}
             <div className="side-column">
-              <SelectionSummary criteria={criteria} onEdit={edit} onReset={reset} />
+              {showResults && (
+                <SelectionSummary criteria={criteria} onEdit={setActiveHeroStep} onReset={reset} />
+              )}
               <div id="saved">
                 <SelectedLots
                   lands={selectedLands}
@@ -260,11 +152,12 @@ export default function App() {
               </div>
             </div>
           </div>
-          {quickResults && (
+          {showResults && (
             <FeaturedLands
               lands={lhLands}
               selectedIds={new Set(selectedIds)}
               onToggle={toggleLand}
+              onSearch={() => setActiveHeroStep(0)}
             />
           )}
           <div className="demo-notice">
