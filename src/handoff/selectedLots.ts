@@ -1,7 +1,7 @@
 import { areaPyeong, pricePerM2, pricePerPyeong } from '../lib/search.ts'
 import type { Land, SaleMethod } from '../types/land.ts'
 
-// PRD Section 3의 3단계 출력: 사용자가 고른 필지를 A02(규제)·A03(실거래)에 넘기는 형식입니다.
+// 검토 목록의 브라우저 저장 형식입니다. 기존에 저장한 선택과의 호환성을 유지합니다.
 // 필드를 바꾸면 version을 올리고 docs/handoff.md도 같이 고쳐 주세요.
 export const SELECTED_LOTS_VERSION = 1
 export const SELECTED_LOTS_STORAGE_KEY = 'team9.selectedLots.v1'
@@ -73,7 +73,7 @@ export function buildPayload(
   }
 }
 
-// 다음 단계 화면이 같은 브라우저에서 바로 읽을 수 있게 저장합니다. 저장소를 못 쓰면 조용히 넘어갑니다.
+// 새로고침 후에도 검토 목록을 복원할 수 있게 저장합니다. 저장소를 못 쓰면 조용히 넘어갑니다.
 export function saveSelectedLots(payload: SelectedLotsPayload) {
   try {
     localStorage.setItem(SELECTED_LOTS_STORAGE_KEY, JSON.stringify(payload))

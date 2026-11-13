@@ -977,11 +977,6 @@ dd {
 .selected-list button:hover {
   background: #f1f4ee;
 }
-.handoff-button {
-  width: 100%;
-  margin-bottom: 8px;
-}
-
 @media (max-width: 1240px) {
   .header-inner,
   .page-shell,
