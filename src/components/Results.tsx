@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { dateStamp, downloadFile } from '../lib/download'
-import { naverMapUrl } from '../lib/mapLink'
+import { marketPriceUrl, naverMapUrl } from '../lib/mapLink'
 import {
   areaPyeong,
   filterByUse,
@@ -137,6 +137,14 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
           const facts = suuiFacts(land)
           return (
             <li key={land.id} className={`land-card ${selected ? 'is-selected' : ''}`}>
+              <a
+                className="market-button"
+                href={marketPriceUrl(land, import.meta.env.BASE_URL)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                3km 내 시세<span className="sr-only"> (새 창)</span> ↗
+              </a>
               <div className="land-description">
                 <div className="land-tags">
                   <span>{land.useName ?? labelFor('purpose', land.purpose)}</span>

@@ -581,6 +581,18 @@ $('tradeTable').addEventListener('click', e => {
   renderTable(filtered());
 });
 $('xlsx').addEventListener('click', downloadXlsx);
+
+// 토지 맞춤 검색 결과 카드의 '3km 내 시세' 버튼은 ?addr=주소&radius=3 으로 이 페이지를 연다
+const params = new URLSearchParams(location.search);
+const fromCard = params.get('addr');
+if(fromCard){
+  $('addr').value = fromCard;
+  const r = document.querySelector(`input[name=radius][value="${CSS.escape(params.get('radius') || '3')}"]`);
+  if(r) r.checked = true;
+  summarize();
+  if($('kData').value && $('kVworld').value) $('form').requestSubmit();
+  else setStatus('필지 주소를 받아 왔어요. 인증키를 입력하고 조회를 눌러 주세요.');
+}
 </script>
 </body>
 </html>

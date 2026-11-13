@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { districtCity, naverMapQuery, naverMapUrl } from '../src/lib/mapLink.ts'
+import {
+  districtCity,
+  marketPriceQuery,
+  marketPriceUrl,
+  naverMapQuery,
+  naverMapUrl,
+} from '../src/lib/mapLink.ts'
 import type { Land } from '../src/types/land.ts'
 
 const base: Land = {
@@ -60,6 +66,41 @@ test('수의계약 필지에 지번이 없으면 사업지구명(괄호 제외)�
     lotNo: '-',
   }
   assert.equal(naverMapQuery(land), '양주회천 고암동')
+})
+
+test('반경 시세 조회 주소는 지번이 있으면 네이버 지도 검색어와 같다', () => {
+  const notice = { ...base, address: '경상남도 창원시 마산합포구 가포동', lotNo: '734-0' }
+  assert.equal(marketPriceQuery(notice), '경상남도 창원시 마산합포구 가포동 734')
+  const suui: Land = {
+    ...base,
+    source: 'lh-suui',
+    regionName: '충청남도',
+    districtName: '논산강산',
+    address: '충청남도 논산강산 강산동',
+    lotNo: '634-0',
+  }
+  assert.equal(marketPriceQuery(suui), '충청남도 논산 강산동 634')
+})
+
+test('지번 없는 수의계약 필지의 반경 시세 조회 주소는 사업지구명 대신 지역명을 쓴다', () => {
+  const land: Land = {
+    ...base,
+    source: 'lh-suui',
+    regionName: '경기도',
+    districtName: '양주회천(택)',
+    address: '경기도 양주회천(택) 고암동',
+    lotNo: '-',
+  }
+  assert.equal(marketPriceQuery(land), '경기도 양주 고암동')
+})
+
+test('반경 시세 조회 페이지 주소에 배포 경로·주소·반경을 넣는다', () => {
+  const land = { ...base, address: '경기도 파주시 와동동', lotNo: '1690-4' }
+  const [path, query] = marketPriceUrl(land, '/team_9/').split('?')
+  assert.equal(path, '/team_9/landtrade-radius.html')
+  const params = new URLSearchParams(query)
+  assert.equal(params.get('addr'), '경기도 파주시 와동동 1690-4')
+  assert.equal(params.get('radius'), '3')
 })
 
 test('네이버 지도 검색 주소로 인코딩한다', () => {
