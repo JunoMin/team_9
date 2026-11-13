@@ -89,7 +89,21 @@ export function resolveRegulations(data: RegulationDataset, land: Land) {
 }
 
 export function regulationValue(value: number | null | undefined, unit: string) {
-  if (value === null || value === undefined) return '자료 없음'
+  if (value === null || value === undefined) return '상담 요청'
   if (value === 0) return '0 (원본값 · 확인 필요)'
   return `${value.toLocaleString('ko-KR')}${unit}`
+}
+
+export function consultationContact(parcel: RegulationParcel | undefined, land: Land) {
+  const validPhone = (value: string | undefined) => {
+    const phone = (value ?? '').trim()
+    return /^(?:0\d{1,2}-?\d{3,4}-?\d{4}|1\d{3}-?\d{4})$/.test(phone) ? phone : undefined
+  }
+  const phone = validPhone(parcel?.contactPhone) ?? validPhone(land.contactPhone)
+  return {
+    phone: phone ?? '1600-1004',
+    href: `tel:${(phone ?? '1600-1004').replaceAll('-', '')}`,
+    label: phone ? '분양문의처' : 'LH 대표 콜센터',
+    isFallback: !phone,
+  }
 }
