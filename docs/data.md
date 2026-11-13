@@ -9,6 +9,17 @@
 2. `pnpm data:lh` 실행 → `src/data/lhLands.generated.ts`가 다시 만들어집니다.
 3. `pnpm check` 후 `chore/lh-data-YYYYMMDD` 같은 브랜치로 PR을 올립니다.
 
+### 자동 갱신 (매일 오전 9시)
+
+`.github/workflows/refresh-lh-data.yml`이 매일 한국 시간 오전 9시에 위 과정을 대신 실행합니다.
+토지 목록이 바뀐 날만 `chore/auto-refresh-lh-data` 브랜치로 PR을 만들고, 그 PR이 열려 있으면 다음 날 최신 데이터로 덮어씁니다. 병합은 사람이 합니다.
+Actions 탭에서 `LH 데이터 자동 갱신` → **Run workflow**로 바로 실행할 수도 있습니다.
+
+처음 한 번 저장소 관리자가 설정해야 합니다.
+
+- Settings > Secrets and variables > Actions에 `LH_SERVICE_KEY` 등록
+- Settings > Actions > General > Workflow permissions에서 "Allow GitHub Actions to create and approve pull requests" 체크
+
 생성 파일은 직접 고치지 않습니다. 필지 하나가 한 줄이라 PR diff에서 추가·삭제된 필지를 바로 볼 수 있습니다.
 
 ## 출처와 범위
