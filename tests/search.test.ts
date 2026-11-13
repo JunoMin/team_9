@@ -194,3 +194,36 @@ test('원화 가격을 손실 없이 읽기 쉬운 단위로 표시한다', () =
   assert.equal(formatPrice(4_999), '0 원')
   assert.equal(formatPrice(0), '0 원')
 })
+
+test('결과가 비면 지역·용도의 가격·면적 범위와 조건별 필지 수를 알려 준다', async () => {
+  const { diagnoseEmpty, searchLands } = await import('../src/lib/search.ts')
+  const criteria = {
+    region: ['gyeonggi'],
+    purpose: ['any'],
+    budget: ['under-300m'],
+    area: ['over-500py'],
+  }
+  assert.equal(searchLands(lhLands, criteria).length, 0)
+  const diagnosis = diagnoseEmpty(lhLands, criteria)
+  const gyeonggi = lhLands.filter((land) => land.region === 'gyeonggi')
+  assert.equal(diagnosis.poolCount, gyeonggi.length)
+  assert.equal(diagnosis.priceWon?.min, Math.min(...gyeonggi.map((land) => land.priceWon)))
+  assert.equal(diagnosis.areaM2?.max, Math.max(...gyeonggi.map((land) => land.areaM2)))
+  assert.equal(diagnosis.budgetOnly?.label, '3억 원 이하')
+  assert.equal(diagnosis.areaOnly?.label, '500평 이상')
+  assert.ok(diagnosis.budgetOnly!.count > 0 && diagnosis.areaOnly!.count > 0)
+  // 500평 이상 중 가장 싼 필지는 예산(3억)을 넘는다.
+  assert.ok(diagnosis.cheapestInArea!.priceWon > 300_000_000)
+})
+
+test('지역·용도 조합에 토지가 없으면 poolCount가 0이다', async () => {
+  const { diagnoseEmpty } = await import('../src/lib/search.ts')
+  const diagnosis = diagnoseEmpty([], {
+    region: ['gyeonggi'],
+    purpose: ['any'],
+    budget: ['any'],
+    area: ['any'],
+  })
+  assert.equal(diagnosis.poolCount, 0)
+  assert.equal(diagnosis.budgetOnly, null)
+})
