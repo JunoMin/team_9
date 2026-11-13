@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { toPyeong } from '../config/searchSteps'
 import { dateStamp, downloadFile } from '../lib/download'
-import { marketPriceUrl, naverMapUrl } from '../lib/mapLink'
+import { marketPriceUrl } from '../lib/mapLink'
 import {
   areaPyeong,
   type EmptyDiagnosis,
@@ -18,6 +18,7 @@ import {
 } from '../lib/search'
 import type { Land } from '../types/land'
 import { LotDetailDialog } from './LotDetailDialog'
+import { MapLinks } from './MapLinks'
 import { RegulationsDialog } from './RegulationsDialog'
 
 const PAGE_SIZE = 20
@@ -239,7 +240,7 @@ export function Results({
                 <div className="card-actions">
                   <label className="select-lot">
                     <input type="checkbox" checked={selected} onChange={() => onToggle(land)} />
-                    상세 검토할 필지로 선택
+                    즐겨찾기에 담기
                   </label>
                   <button
                     type="button"
@@ -257,24 +258,7 @@ export function Results({
                   >
                     건축 규제 보기
                   </button>
-                  <a
-                    className="regulations-button"
-                    href={naverMapUrl(land)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    네이버 지도<span className="sr-only"> (새 창)</span> ↗
-                  </a>
-                  {land.suui?.lhMapUrl && (
-                    <a
-                      className="regulations-button"
-                      href={land.suui.lhMapUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      LH 내집어디 지도<span className="sr-only"> (새 창)</span> ↗
-                    </a>
-                  )}
+                  <MapLinks land={land} />
                 </div>
               </div>
               <dl className="land-numbers">

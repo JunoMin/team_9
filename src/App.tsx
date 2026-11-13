@@ -7,30 +7,20 @@ import { SelectedLots } from './components/SelectedLots'
 import { SelectionSummary } from './components/SelectionSummary'
 import { emptyCriteria, searchSteps, toggleChoice } from './config/searchSteps'
 import { lhLands, lhLandsFetchedAt } from './data/lhLands.generated'
-import { buildPayload, loadSelectedLots, saveSelectedLots } from './handoff/selectedLots'
 import { diagnoseEmpty, searchLands } from './lib/search'
 import type { Land, SearchCriteria } from './types/land'
 
 const landsById = new Map(lhLands.map((land) => [land.id, land]))
-
-// 저장한 검토 목록에서 아직 판매 중인 필지만 되살립니다.
-function restoreSelection(): string[] {
-  return (loadSelectedLots()?.lots ?? []).map((lot) => lot.lotId).filter((id) => landsById.has(id))
-}
 
 export default function App() {
   const [criteria, setCriteria] = useState<SearchCriteria>({ ...emptyCriteria })
   const [showResults, setShowResults] = useState(false)
   const [activeHeroStep, setActiveHeroStep] = useState<number | null>(null)
   const [useKeyword, setUseKeyword] = useState('')
-  const [selectedIds, setSelectedIds] = useState<string[]>(restoreSelection)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [favoritesOpen, setFavoritesOpen] = useState(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const selectedLands = selectedIds.map((id) => landsById.get(id)!)
-
-  useEffect(() => {
-    const lands = selectedIds.map((id) => landsById.get(id)!)
-    saveSelectedLots(buildPayload(lands, lhLandsFetchedAt))
-  }, [selectedIds])
 
   function toggleLand(land: Land) {
     setSelectedIds((ids) =>
@@ -92,9 +82,18 @@ export default function App() {
               조건으로 찾기
             </button>
           </nav>
-          <a className="header-saved" href="#saved">
-            <DesignIcon name="bookmark-simple" /> 검토할 필지 <span>{selectedIds.length}</span>
-          </a>
+          <button
+            type="button"
+            className="header-saved"
+            onClick={() => setFavoritesOpen(true)}
+            aria-haspopup="dialog"
+            aria-controls="favorites-dialog"
+            aria-expanded={favoritesOpen}
+            aria-label={`즐겨찾기 ${selectedIds.length}개 열기`}
+          >
+            <DesignIcon name="bookmark-simple" /> 즐겨찾기
+            <span>{selectedIds.length}</span>
+          </button>
         </div>
       </header>
       <main id="main">
@@ -119,8 +118,8 @@ export default function App() {
               onSearch={() => setActiveHeroStep(0)}
             />
           )}
-          <div className={showResults ? 'workspace quick-results' : 'saved-section'}>
-            {showResults && (
+          {showResults && (
+            <div className="workspace quick-results">
               <section className="search-panel" aria-labelledby="results-title">
                 <div className="search-content">
                   <div className="question-heading">
@@ -130,7 +129,7 @@ export default function App() {
                     <h2 id="results-title" tabIndex={-1} ref={headingRef}>
                       고르신 조건으로 찾아봤어요.
                     </h2>
-                    <p>관심 있는 필지를 선택해 검토 목록에 모아 보세요.</p>
+                    <p>마음에 드는 필지는 즐겨찾기에 담아 한곳에서 살펴보세요.</p>
                   </div>
                   <Results
                     lands={searchLands(lhLands, criteria)}
@@ -143,20 +142,11 @@ export default function App() {
                   />
                 </div>
               </section>
-            )}
-            <div className="side-column">
-              {showResults && (
+              <div className="side-column">
                 <SelectionSummary criteria={criteria} onEdit={setActiveHeroStep} onReset={reset} />
-              )}
-              <div id="saved">
-                <SelectedLots
-                  lands={selectedLands}
-                  onRemove={toggleLand}
-                  onClear={() => setSelectedIds([])}
-                />
               </div>
             </div>
-          </div>
+          )}
           {showResults && (
             <FeaturedLands
               lands={lhLands}
@@ -179,6 +169,13 @@ export default function App() {
           </div>
         </div>
       </main>
+      <SelectedLots
+        open={favoritesOpen}
+        onClose={() => setFavoritesOpen(false)}
+        lands={selectedLands}
+        onRemove={toggleLand}
+        onClear={() => setSelectedIds([])}
+      />
       <footer className="site-footer">
         <div>
           <Brand />
