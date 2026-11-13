@@ -48,7 +48,7 @@ def main():
     parcels = [dict(row=r[21], region=r[0], district=r[1], locality=r[2] or '',
                     plannedLot=r[3] or '', confirmedLot=r[4] or '', areaM2=number(r[10]),
                     use=r[6] or '', zoning=r[14] or '', coverage=number(r[15]),
-                    floorArea=number(r[16]), floors=number(r[17]), noticeIds=ids(r[22]),
+                    floorArea=number(r[16]), floors=number(r[17]), contactPhone=str(r[20] or '').strip(), noticeIds=ids(r[22]),
                     relatedNoticeIds=ids(r[24])) for r in raw]
     if len({p['row'] for p in parcels}) != len(parcels):
         raise ValueError('Duplicate source row IDs')

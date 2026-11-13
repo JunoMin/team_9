@@ -124,6 +124,37 @@
   margin: 4px 0;
 }
 
+.regulations-consult-link {
+  color: #315b45;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.regulations-consultation {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f5f6f3;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.regulations-consultation h5 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.regulations-consultation p {
+  margin: 8px 0;
+}
+
+.regulations-consultation > a:last-child {
+  color: var(--muted);
+  text-underline-offset: 3px;
+}
+
 @media (max-width: 600px) {
   .land-regulations {
     flex-basis: auto;
