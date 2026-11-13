@@ -16,7 +16,7 @@ import {
 } from './config/searchSteps'
 import { lhLands, lhLandsFetchedAt } from './data/lhLands.generated'
 import { loadSelectedLots } from './handoff/selectedLots'
-import { searchLands } from './lib/search'
+import { diagnoseEmpty, searchLands } from './lib/search'
 import type { Land, SearchCriteria } from './types/land'
 
 const landsById = new Map(lhLands.map((land) => [land.id, land]))
@@ -187,6 +187,7 @@ export default function App() {
                 {showResults ? (
                   <Results
                     lands={searchLands(lhLands, criteria)}
+                    diagnosis={diagnoseEmpty(lhLands, criteria)}
                     useKeyword={useKeyword}
                     onUseKeyword={setUseKeyword}
                     selectedIds={new Set(selectedIds)}

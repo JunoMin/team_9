@@ -29,6 +29,51 @@ export function searchLands(lands: readonly Land[], criteria: SearchCriteria): L
     .sort((a, b) => a.priceWon - b.priceWon || a.id.localeCompare(b.id))
 }
 
+export interface EmptyDiagnosis {
+  // 선택한 지역·용도에 판매 중인 필지 수. 0이면 지역·용도 조합 자체에 토지가 없습니다.
+  poolCount: number
+  priceWon?: { min: number; max: number }
+  areaM2?: { min: number; max: number }
+  // 예산·면적을 하나씩만 적용했을 때 남는 필지 수. 'any'를 고른 조건은 null입니다.
+  budgetOnly: { label: string; count: number } | null
+  areaOnly: { label: string; count: number } | null
+  // 고른 면적 범위 안에서 가장 싼 필지와, 고른 예산 안에서 가장 넓은 필지. 예산·면적을 어디까지 바꿔야 하는지 알려 줍니다.
+  cheapestInArea?: Land
+  largestInBudget?: Land
+}
+
+// 결과가 0개일 때 어떤 조건 때문에 비었는지 설명할 숫자를 모읍니다.
+export function diagnoseEmpty(lands: readonly Land[], criteria: SearchCriteria): EmptyDiagnosis {
+  const budget = selectedChoice(criteria, searchSteps[2])
+  const area = selectedChoice(criteria, searchSteps[3])
+  const pool = lands.filter(
+    (land) => matches(criteria.region, land.region) && matches(criteria.purpose, land.purpose),
+  )
+  const inBudget = (land: Land) => budget?.max === undefined || land.priceWon <= budget.max
+  const inArea = (land: Land) =>
+    (area?.min === undefined || land.areaM2 >= area.min) &&
+    (area?.max === undefined || land.areaM2 <= area.max)
+  const byBudget = pool.filter(inBudget)
+  const byArea = pool.filter(inArea)
+  const range = (values: number[]) => ({ min: Math.min(...values), max: Math.max(...values) })
+  const constrained = (choice: typeof budget, bounded: boolean) =>
+    choice && bounded ? choice : null
+
+  return {
+    poolCount: pool.length,
+    priceWon: pool.length ? range(pool.map((land) => land.priceWon)) : undefined,
+    areaM2: pool.length ? range(pool.map((land) => land.areaM2)) : undefined,
+    budgetOnly: constrained(budget, budget?.max !== undefined)
+      ? { label: budget!.label, count: byBudget.length }
+      : null,
+    areaOnly: constrained(area, area?.min !== undefined || area?.max !== undefined)
+      ? { label: area!.label, count: byArea.length }
+      : null,
+    cheapestInArea: [...byArea].sort((a, b) => a.priceWon - b.priceWon)[0],
+    largestInBudget: [...byBudget].sort((a, b) => b.areaM2 - a.areaM2)[0],
+  }
+}
+
 export function pricePerM2(land: Land): number {
   return Math.round(land.priceWon / land.areaM2)
 }
