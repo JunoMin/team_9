@@ -77,13 +77,7 @@ export default function App() {
       </header>
       <main id="main" className="page-shell">
         <section className="hero" aria-labelledby="page-title">
-          <p className="eyebrow">
-            <span aria-hidden="true" /> 나에게 맞는 땅 찾기
-          </p>
-          <h1 id="page-title">
-            원하는 땅에,
-            <br className="mobile-break" /> <span>한 걸음 더 가까이.</span>
-          </h1>
+          <h1 id="page-title">나에게 맞는 토지 찾기</h1>
           <p>복잡한 검색 대신, 네 가지 조건만 골라보세요.</p>
         </section>
         <div className="workspace">
@@ -195,7 +189,7 @@ export default function App() {
         </div>
       </main>
       <footer className="site-footer">
-        <span>TEAM 09 · 우리땅</span>
+        <span>TEAM 09 · 내땅어디</span>
         <p>함께 만들어가는 토지 맞춤 검색기</p>
       </footer>
     </>
