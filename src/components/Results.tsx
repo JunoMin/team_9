@@ -196,6 +196,16 @@ export function Results({ lands, useKeyword, onUseKeyword, selectedIds, onToggle
                   >
                     네이버 지도<span className="sr-only"> (새 창)</span> ↗
                   </a>
+                  {land.suui?.lhMapUrl && (
+                    <a
+                      className="regulations-button"
+                      href={land.suui.lhMapUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      LH 내집어디 지도<span className="sr-only"> (새 창)</span> ↗
+                    </a>
+                  )}
                 </div>
               </div>
               <dl className="land-numbers">

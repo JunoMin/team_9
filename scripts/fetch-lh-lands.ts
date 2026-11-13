@@ -134,6 +134,17 @@ function unescapeHtml(text: string) {
     .replaceAll('&amp;', '&')
 }
 
+// LH 청약플러스 '필지바로가기' 버튼이 여는 LH 내집어디 주소입니다. 기업·비축토지와 잔지는 LH가 지도를 제공하지 않습니다.
+function lhMapUrl(row: Row): string | undefined {
+  const district = String(row.bzdtCd ?? '')
+  const lot = String(row.loldNo ?? '')
+  const epzType = String(row.epzTpCd ?? '')
+  const supplyType = String(row.stlSplPpCd ?? '')
+  if (!district || !lot) return undefined
+  if (epzType === '033' || epzType === '034' || supplyType.startsWith('V')) return undefined
+  return `https://bizmap.lh.or.kr/lhmap.do?bzdtCd=${district}&loldNo=${lot}`
+}
+
 async function suuiLots(): Promise<LhLot[]> {
   const response = await fetch(SUUI_URL, { headers: { 'User-Agent': 'Mozilla/5.0' } })
   const page = await response.text()
@@ -165,6 +176,7 @@ async function suuiLots(): Promise<LhLot[]> {
       paymentMonths: toNumber(row.pcPymCnMcnt) ?? undefined,
       usableFrom: toIsoDate(row.lndUsPsbDt),
       brokerAllowed: row.trdMdtLndYn === 'Y',
+      lhMapUrl: lhMapUrl(row),
     },
   }))
 }
