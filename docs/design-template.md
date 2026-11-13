@@ -26,6 +26,10 @@ Landfolk의 풍경 중심 첫 화면, 짙은 초록색, 넓은 여백을 토지 
 - 지역·용도·예산·면적 검색, 규제 팝업, CSV, 3km 시세와 LH 지도 연결은 기존 컴포넌트를 사용합니다.
 - 920px 이하에서 검색과 요약을 세로로 배치하고, 600px 이하에서 소개 검색 영역을 2열로, 공급 카드를 1열로 표시합니다. 최소 320px 화면을 지원합니다.
 
+## 3km 시세 페이지
+
+`public/landtrade-radius.html`은 독립 HTML이라 Vite의 메인 CSS 번들을 사용하지 않습니다. 배포 후에도 동일하게 보이도록 `public/radius-design.css`를 상대 경로로 불러옵니다. 이 파일의 색상 토큰은 `src/design.css`와 맞춰 관리합니다. 헤더·풍경 이미지·서체·입력 카드·어두운 조회 조건 패널과 지도·차트·거래 표에 공통 스타일을 적용했습니다. 조회 API, 주소/반경 전달, 필터·정렬·엑셀 다운로드는 기존 동작을 유지합니다.
+
 ## 이미지·아이콘
 
 - `public/images/gwanggyo-hero.webp`: LH가 조성한 광교신도시의 광교호수공원 항공사진(1800×600으로 잘라 씀). 원본은 [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gwanggyo_Lake_Park,_Yeongtong_District.jpg), 촬영 Park Areum, 공공누리 제1유형(출처 표시 시 상업적 이용·변경 가능)이며 화면에 출처를 표시합니다. 실제 공급 필지 사진이 아닙니다.
