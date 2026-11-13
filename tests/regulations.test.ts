@@ -2,7 +2,12 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { regulationData } from '../src/data/regulations.generated.ts'
 import { lhLands } from '../src/data/lhLands.generated.ts'
-import { lotKey, regulationValue, resolveRegulations } from '../src/lib/regulations.ts'
+import {
+  consultationContact,
+  lotKey,
+  regulationValue,
+  resolveRegulations,
+} from '../src/lib/regulations.ts'
 import type { Land } from '../src/types/land.ts'
 import type { RegulationDataset, RegulationParcel } from '../src/types/regulations.ts'
 
@@ -91,7 +96,7 @@ test('공고 ID만 같다고 다른 필지의 규제표를 적용하지 않는�
 })
 
 test('0·공란·불일치를 구분한다', () => {
-  assert.equal(regulationValue(null, '%'), '자료 없음')
+  assert.equal(regulationValue(null, '%'), '상담 요청')
   assert.match(regulationValue(0, '%'), /원본값/)
   assert.equal(regulationValue(50, '%'), '50%')
   const result = resolveRegulations(data, {
@@ -104,6 +109,25 @@ test('0·공란·불일치를 구분한다', () => {
 
 test('등록되지 않은 필지는 미연결 상태다', () => {
   assert.equal(resolveRegulations(data, { ...land, districtName: '다른지구' }).match, 'none')
+})
+
+test('상담은 엑셀 분양문의처, 검색 필지 문의처, 대표번호 순으로 연결한다', () => {
+  const selected = { ...land, contactPhone: '031-111-2222' }
+  const excel = consultationContact({ ...parcel, contactPhone: '043-901-4342' }, selected)
+  assert.equal(excel.phone, '043-901-4342')
+  assert.equal(excel.href, 'tel:0439014342')
+  assert.equal(excel.isFallback, false)
+  assert.equal(consultationContact(undefined, selected).phone, '031-111-2222')
+  const fallback = consultationContact({ ...parcel, contactPhone: '-' }, land)
+  assert.equal(fallback.phone, '1600-1004')
+  assert.equal(fallback.href, 'tel:16001004')
+  assert.equal(fallback.isFallback, true)
+})
+
+test('실제 엑셀에서 가져온 분양문의처로 상담한다', () => {
+  const selected = lhLands.find((x) => x.noticeId === 'BN-0008180' && x.lotNo === '9041-0')!
+  const result = resolveRegulations(regulationData, selected)
+  assert.equal(consultationContact(result.parcel, selected).phone, '043-901-4342')
 })
 
 test('수집 엑셀의 출처·표본·원문 URL이 서비스 데이터에 남는다', () => {

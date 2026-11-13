@@ -1,5 +1,5 @@
 import { regulationData } from '../data/regulations.generated'
-import { regulationValue, resolveRegulations } from '../lib/regulations'
+import { consultationContact, regulationValue, resolveRegulations } from '../lib/regulations'
 import type { Land } from '../types/land'
 import './LandRegulations.css'
 
@@ -7,21 +7,22 @@ const matchLabels = {
   parcel: '엑셀 필지 일치',
   ambiguous: '동일 조건 자료 중복',
   reference: '관련 자료 있음 · 필지 적용 미확인',
-  none: '연결된 규제 자료 없음',
+  none: '규제 안내 · 상담 요청',
 }
 
 export function LandRegulations({ land }: { land: Land }) {
   const result = resolveRegulations(regulationData, land)
   const { parcel } = result
+  const contact = consultationContact(parcel, land)
   const values = [
-    ['용도지역', parcel?.zoning || '자료 없음'],
-    ['공급용도', parcel?.use || '자료 없음'],
+    ['용도지역', parcel?.zoning || '상담 요청'],
+    ['공급용도', parcel?.use || '상담 요청'],
     ['건폐율', regulationValue(parcel?.coverage, '%')],
     ['용적률', regulationValue(parcel?.floorArea, '%')],
     ['최고층수', regulationValue(parcel?.floors, '층')],
-    ['최고높이', '자료 없음'],
-    ['허용용도', '필지별 시행지침 확인 필요'],
-    ['불허용도', '필지별 시행지침 확인 필요'],
+    ['최고높이', '상담 요청'],
+    ['허용용도', '상담 요청'],
+    ['불허용도', '상담 요청'],
   ]
   return (
     <section className="land-regulations" aria-label="지구단위계획 건축 규제">
@@ -32,18 +33,55 @@ export function LandRegulations({ land }: { land: Land }) {
       <p className="regulations-context">
         {parcel
           ? `${parcel.region} ${parcel.district} · 예정지번 ${parcel.plannedLot || '미기재'} · 확정지번 ${parcel.confirmedLot || '미기재'} · ${parcel.areaM2.toLocaleString('ko-KR')}㎡`
-          : result.match === 'ambiguous'
-            ? '일치 후보가 여러 건이라 규제값을 선택하지 않았습니다. 원본 자료를 확인해 주세요.'
-            : '이 필지에 적용할 규제값을 확정하지 못했습니다. 관련 지구 자료가 있어도 다른 블록의 수치를 대신 적용하지 않습니다.'}
+          : '이 필지의 규제 정보는 현재 서비스에서 제공하지 않습니다. 아래 문의처로 상담을 요청해 주세요.'}
       </p>
       <dl className="regulations-grid">
         {values.map(([label, value]) => (
           <div key={label}>
             <dt>{label}</dt>
-            <dd>{value}</dd>
+            <dd>
+              {value === '상담 요청' ? (
+                <a
+                  className="regulations-consult-link"
+                  href={contact.href}
+                  aria-label={`${label} 상담 요청, ${contact.label} ${contact.phone} 전화 연결`}
+                >
+                  상담 요청
+                </a>
+              ) : (
+                value
+              )}
+            </dd>
           </div>
         ))}
       </dl>
+      <aside className="regulations-consultation" aria-label="LH 건축 규제 문의 안내">
+        <h5>건축 규제가 궁금하신가요?</h5>
+        <p>
+          ‘상담 요청’ 항목은 현재 이 서비스에서 제공하지 않는 정보입니다. 해당 토지의 건축 규제는
+          아래 문의처로 확인해 주세요.
+        </p>
+        <a className="regulations-consult-link" href={contact.href}>
+          전화 상담 요청 · {contact.label} {contact.phone}
+        </a>
+        {contact.isFallback ? (
+          <>
+            <p>
+              등록된 분양문의처가 없어 대표 콜센터로 안내합니다. 담당 부서 연결을 요청해 주세요.
+            </p>
+            <p>평일 09:00~12:00, 13:00~18:00 · 주말·공휴일 제외</p>
+            <a
+              href="https://www.lh.or.kr/menu.es?mid=a10310000000"
+              target="_blank"
+              rel="noreferrer"
+            >
+              LH 공식 상담 안내
+            </a>
+          </>
+        ) : (
+          <p>해당 필지의 분양문의처로 전화 연결됩니다.</p>
+        )}
+      </aside>
       {result.conflicts.length > 0 && (
         <div className="regulations-warning" role="status">
           <strong>검색 목록과 엑셀의 값이 다릅니다.</strong>

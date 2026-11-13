@@ -11,6 +11,7 @@ export interface RegulationParcel {
   coverage: number | null
   floorArea: number | null
   floors: number | null
+  contactPhone?: string
   noticeIds: string[]
   relatedNoticeIds: string[]
 }
