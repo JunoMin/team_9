@@ -69,6 +69,7 @@ function providerRequest(params: URLSearchParams, env: NodeJS.ProcessEnv) {
 }
 
 export function marketHandler(env: NodeJS.ProcessEnv) {
+  const geography = new Map<string, { body: string; expires: number }>()
   return async (req: IncomingMessage, res: ServerResponse) => {
     const fail = (status: number, message: string) => {
       res
@@ -85,6 +86,17 @@ export function marketHandler(env: NodeJS.ProcessEnv) {
       const target = providerRequest(new URL(req.url ?? '/', 'http://localhost').searchParams, env)
       if (!target) return fail(400, '조회 조건을 확인해 주세요.')
       if (!target.key) return fail(503, '시세 조회 서비스의 인증 설정이 필요합니다.')
+      const cacheId = target.field === 'key' ? target.url.href : undefined
+      const cached = cacheId && geography.get(cacheId)
+      if (cached && cached.expires > Date.now()) {
+        res
+          .writeHead(200, {
+            'content-type': 'application/json; charset=utf-8',
+            'cache-control': 'no-store',
+          })
+          .end(cached.body)
+        return
+      }
       const key = decodeURIComponent(target.key.trim())
       target.url.searchParams.set(target.field, key)
       const upstream = await fetch(target.url, {
@@ -107,6 +119,11 @@ export function marketHandler(env: NodeJS.ProcessEnv) {
         })
       }
       if (body.includes(key) || body.includes(encodeURIComponent(key))) throw new Error()
+      if (cacheId && body.length < 4_000_000) {
+        geography.delete(cacheId)
+        if (geography.size >= 12) geography.delete(geography.keys().next().value!)
+        geography.set(cacheId, { body, expires: Date.now() + 30 * 60_000 })
+      }
       res
         .writeHead(200, {
           'content-type': xml
