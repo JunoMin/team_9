@@ -206,16 +206,22 @@ export function Results({
       <ul className="result-list">
         {sorted.slice(0, visible).map((land) => {
           const selected = selectedIds.has(land.id)
+          const isMarketDemo = land.id === 'SUUI-100330-수의계약-710-3'
           const facts = suuiFacts(land)
           return (
             <li key={land.id} className={`land-card ${selected ? 'is-selected' : ''}`}>
               <a
                 className="market-button"
-                href={marketPriceUrl(land, import.meta.env.BASE_URL)}
+                href={
+                  isMarketDemo
+                    ? marketPriceUrl(land, import.meta.env.BASE_URL)
+                    : `${import.meta.env.BASE_URL}landtrade-radius.html?radius=3`
+                }
                 target="_blank"
                 rel="noreferrer"
               >
-                3km 내 시세<span className="sr-only"> (새 창)</span> ↗
+                {isMarketDemo ? '3km 내 시세' : '만송동 3km 시세 시연'}
+                <span className="sr-only"> (새 창)</span> ↗
               </a>
               <div className="land-description">
                 <div className="land-tags">
