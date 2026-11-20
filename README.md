@@ -16,7 +16,11 @@ pnpm install
 pnpm dev
 ```
 
-터미널에 표시된 로컬 주소를 브라우저에서 엽니다. API 키나 별도 서버 설정은 필요하지 않습니다.
+터미널에 표시된 로컬 주소를 브라우저에서 엽니다. 기본 토지 검색은 바로 사용할 수 있습니다.
+
+**3km 내 시세 시연**을 준비할 때는 운영자가 프로젝트 루트의 `.env.local`에 `LAND_TRADE_KEY`(공공데이터포털 토지 매매 실거래가)와 `VWORLD_KEY`(브이월드 주소·법정동 경계)를 설정하고 개발 서버를 다시 시작합니다. 브이월드 등록 도메인이 필요하면 `VWORLD_DOMAIN`도 설정하세요. 사용자는 필지의 ‘3km 내 시세’를 누르면 됩니다.
+
+GitHub Pages에서 시세를 제공하려면 `api/land-market.ts`를 Node 서버 함수로 배포하고 같은 환경 변수를 함수에 설정합니다. GitHub 저장소의 Actions 변수 `LAND_MARKET_ENDPOINT`에는 배포한 함수의 공개 HTTPS 주소를 넣고 Pages를 다시 배포합니다.
 
 ```bash
 pnpm check      # 정적 검사, 검색 테스트, 프로덕션 빌드
