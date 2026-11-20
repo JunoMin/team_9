@@ -148,5 +148,7 @@ test('실제 검색 목록에서 필지 연결은 유효한 지번만 사용한�
     assert.ok(lotKey(selected.lotNo), selected.id)
     assert.ok(Math.abs(result.parcel.areaM2 - selected.areaM2) < 0.01, selected.id)
   }
-  assert.ok(matched > 1000, `연결 필지 ${matched}건`)
+  // 연결 건수는 판매 중인 공고 수에 따라 매일 달라집니다. 연결이 통째로 끊기지 않았는지만 봅니다.
+  // (2026-11-13 데이터 1,000건 이상 → 2026-11-20 데이터 778건: 공고 마감으로 공고 필지가 1,032건에서 481건으로 줄어듦)
+  assert.ok(matched > 300, `연결 필지 ${matched}건`)
 })
