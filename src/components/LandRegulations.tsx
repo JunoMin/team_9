@@ -1,3 +1,4 @@
+import { findNoticeRegulation } from '../data/noticeRegulations'
 import { regulationData } from '../data/regulations.generated'
 import { consultationContact, regulationValue, resolveRegulations } from '../lib/regulations'
 import type { Land } from '../types/land'
@@ -14,26 +15,44 @@ export function LandRegulations({ land }: { land: Land }) {
   const result = resolveRegulations(regulationData, land)
   const { parcel } = result
   const contact = consultationContact(parcel, land)
-  const values = [
-    ['용도지역', parcel?.zoning || '상담 요청'],
-    ['공급용도', parcel?.use || '상담 요청'],
-    ['건폐율', regulationValue(parcel?.coverage, '%')],
-    ['용적률', regulationValue(parcel?.floorArea, '%')],
-    ['최고층수', regulationValue(parcel?.floors, '층')],
-    ['최고높이', '상담 요청'],
-    ['허용용도', '상담 요청'],
-    ['불허용도', '상담 요청'],
-  ]
+  // 엑셀에 없는 필지는 공고문·시행지침에서 옮긴 값을 씁니다(공고 ID·지번·면적 일치 시).
+  const notice = parcel ? undefined : findNoticeRegulation(land)
+  const values = notice
+    ? [
+        ['용도지역', '상담 요청'],
+        ['공급용도', `${notice.use} (${notice.block})`],
+        ['건폐율', regulationValue(notice.coverage, '% 이하')],
+        ['용적률', regulationValue(notice.floorArea, '% 이하')],
+        [
+          '최고층수',
+          `${notice.maxFloors}층 이하${notice.minFloors ? ` (최저 ${notice.minFloors}층)` : ''}`,
+        ],
+        ['최고높이', notice.maxHeight ?? '상담 요청'],
+        ['허용용도', notice.allowed ?? '상담 요청'],
+        ['불허용도', notice.prohibited ?? '상담 요청'],
+      ]
+    : [
+        ['용도지역', parcel?.zoning || '상담 요청'],
+        ['공급용도', parcel?.use || '상담 요청'],
+        ['건폐율', regulationValue(parcel?.coverage, '%')],
+        ['용적률', regulationValue(parcel?.floorArea, '%')],
+        ['최고층수', regulationValue(parcel?.floors, '층')],
+        ['최고높이', '상담 요청'],
+        ['허용용도', '상담 요청'],
+        ['불허용도', '상담 요청'],
+      ]
   return (
     <section className="land-regulations" aria-label="지구단위계획 건축 규제">
       <div className="regulations-heading">
         <h4>지구단위계획 건축 규제</h4>
-        <span>{matchLabels[result.match]}</span>
+        <span>{notice ? '공고문 확인' : matchLabels[result.match]}</span>
       </div>
       <p className="regulations-context">
         {parcel
           ? `${parcel.region} ${parcel.district} · 예정지번 ${parcel.plannedLot || '미기재'} · 확정지번 ${parcel.confirmedLot || '미기재'} · ${parcel.areaM2.toLocaleString('ko-KR')}㎡`
-          : '이 필지의 규제 정보는 현재 서비스에서 제공하지 않습니다. 아래 문의처로 상담을 요청해 주세요.'}
+          : notice
+            ? `공고문 기준 · ${notice.block} · 지번 ${notice.lotNo} · ${notice.areaM2.toLocaleString('ko-KR')}㎡`
+            : '이 필지의 규제 정보는 현재 서비스에서 제공하지 않습니다. 아래 문의처로 상담을 요청해 주세요.'}
       </p>
       <dl className="regulations-grid">
         {values.map(([label, value]) => (
@@ -91,13 +110,32 @@ export function LandRegulations({ land }: { land: Land }) {
           <p>위 표는 엑셀의 값입니다. 최신 공고와 시행지침을 확인해 주세요.</p>
         </div>
       )}
-      <p className="regulations-note">
-        자료 수집일 {regulationData.asOf} ·{' '}
-        {parcel ? `선착순 계약가능지구(토지) 원본 ${parcel.row}행` : 'LH 공고 및 지구별 수집자료'}
-        <br />
-        엑셀의 필지 일치는 최신 시행지침 검증을 의미하지 않습니다. 0은 원본값이며 무제한으로
-        해석하지 않습니다.
-      </p>
+      {notice ? (
+        <div className="regulations-note">
+          <p>
+            확인일 {notice.checkedOn} · 아래 원문에서 옮긴 값입니다. 건폐율·용적률·층수는 최고
+            한도이며, 지구단위계획 변경에 따라 달라질 수 있습니다.
+          </p>
+          <ul>
+            {notice.sources.map((source) => (
+              <li key={source.url}>
+                <a href={source.url} target="_blank" rel="noreferrer">
+                  {source.title}
+                </a>{' '}
+                · {source.detail}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="regulations-note">
+          자료 수집일 {regulationData.asOf} ·{' '}
+          {parcel ? `선착순 계약가능지구(토지) 원본 ${parcel.row}행` : 'LH 공고 및 지구별 수집자료'}
+          <br />
+          엑셀의 필지 일치는 최신 시행지침 검증을 의미하지 않습니다. 0은 원본값이며 무제한으로
+          해석하지 않습니다.
+        </p>
+      )}
       {result.samples.length > 0 && (
         <details className="regulations-reference">
           <summary>공고의 블록별 규제표 {result.samples.length}건 · 필지 적용 미확인</summary>

@@ -152,3 +152,14 @@ test('실제 검색 목록에서 필지 연결은 유효한 지번만 사용한�
   // (2026-11-13 데이터 1,000건 이상 → 2026-11-20 데이터 778건: 공고 마감으로 공고 필지가 1,032건에서 481건으로 줄어듦)
   assert.ok(matched > 300, `연결 필지 ${matched}건`)
 })
+
+test('공고문에서 옮긴 규제는 공고 ID·지번·면적이 모두 같은 필지에만 쓴다', async () => {
+  const { findNoticeRegulation } = await import('../src/data/noticeRegulations.ts')
+  const goyang = lhLands.find((land) => land.noticeId === 'BN-0008127' && land.lotNo === '201-2')
+  const suwon = lhLands.find((land) => land.noticeId === 'BN-0008196' && land.lotNo === '311-1')
+  assert.ok(goyang && suwon)
+  assert.equal(findNoticeRegulation(goyang)?.floorArea, 800)
+  assert.equal(findNoticeRegulation(suwon)?.minFloors, 6)
+  assert.equal(findNoticeRegulation({ ...goyang, areaM2: goyang.areaM2 + 1 }), undefined)
+  assert.equal(findNoticeRegulation({ ...goyang, lotNo: '201-1' }), undefined)
+})
