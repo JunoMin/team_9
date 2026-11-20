@@ -17,7 +17,7 @@
 .design-template a {
   color: inherit;
 }
-.design-template :is(#search, #available, #saved) {
+.design-template :is(#search, #available) {
   scroll-margin-top: 100px;
 }
 .design-template #main {
@@ -70,6 +70,8 @@
   text-underline-offset: 5px;
 }
 .design-template .header-saved {
+  background: #f4f8f3;
+  color: var(--design-ink);
   display: flex;
   align-items: center;
   gap: 9px;
@@ -82,6 +84,13 @@
   font-weight: 500;
 }
 .header-saved > span {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding-inline: 5px;
+  border-radius: 50%;
+  background: #dfebe1;
   color: var(--green);
   font-weight: 700;
 }
@@ -775,7 +784,7 @@
   .design-template .search-panel {
     scroll-margin-top: 86px;
   }
-  .design-template :is(#search, #available, #saved) {
+  .design-template :is(#search, #available) {
     scroll-margin-top: 86px;
   }
   .design-template .header-inner {
@@ -1275,13 +1284,6 @@ body:has(.hero-picker[open]) {
   display: flex;
   gap: 8px;
 }
-.design-template .saved-section .side-column {
-  display: block;
-}
-.design-template .saved-section .selected-panel {
-  max-width: 680px;
-  margin: 0 auto;
-}
 @media (max-width: 600px) {
   .hero-picker-tabs button {
     padding: 11px 4px;
@@ -1300,5 +1302,361 @@ body:has(.hero-picker[open]) {
     min-width: 0;
     padding-inline: 14px;
     flex: 1;
+  }
+}
+
+/* Compact provider icons share one treatment across results, details and favorites. */
+.map-icon-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.design-template .map-icon-link {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #c9ddcf;
+  border-radius: 13px;
+  background: #eef8ee;
+  color: #087c35;
+  text-decoration: none;
+  transition:
+    background 160ms,
+    box-shadow 160ms;
+}
+.design-template .map-icon-link--lh {
+  background: #edf4f7;
+  border-color: #cbdde4;
+  color: #175b79;
+}
+.map-provider-mark {
+  font-family: Arial, sans-serif;
+  font-size: 23px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.map-icon-link--lh .map-provider-mark {
+  font-size: 17px;
+  letter-spacing: -1.4px;
+}
+.map-external-arrow {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: 11px;
+  line-height: 1;
+}
+.map-link-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 2;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--design-forest);
+  color: white;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  visibility: hidden;
+  pointer-events: none;
+}
+.map-icon-link + .map-icon-link .map-link-tooltip {
+  left: -52px;
+}
+.favorite-card .map-icon-link .map-link-tooltip {
+  left: auto;
+  right: 0;
+}
+.map-icon-link:is(:hover, :focus-visible) {
+  box-shadow: 0 3px 10px #133e351a;
+}
+.map-icon-link:is(:hover, :focus-visible) .map-link-tooltip {
+  visibility: visible;
+}
+.lot-detail-links {
+  align-items: center;
+}
+
+/* Favorites live in a header drawer instead of a separate section on the page. */
+.favorites-dialog {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(440px, 100vw);
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--border);
+  border-radius: 24px 0 0 24px;
+  background: var(--design-paper);
+  color: var(--design-ink);
+  box-shadow: -20px 0 80px #052a2526;
+  overflow: hidden;
+}
+.favorites-dialog::backdrop {
+  background: #082c275c;
+  backdrop-filter: blur(4px);
+}
+body:has(.favorites-dialog[open]) {
+  overflow: hidden;
+}
+.favorites-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.favorites-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 30px 28px 0;
+}
+.favorites-heading .section-eyebrow {
+  margin: 0 0 12px;
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+.favorites-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-family: var(--design-serif);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -1.2px;
+}
+.favorites-heading h2 span {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 50%;
+  background: var(--design-sage);
+  font:
+    600 12px 'Noto Sans KR',
+    sans-serif;
+  letter-spacing: 0;
+}
+.favorites-close,
+.favorite-card-top button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: white;
+  color: var(--green);
+  font-size: 26px;
+  font-weight: 300;
+}
+.favorites-intro {
+  margin: 14px 28px 24px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.favorites-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 28px 20px;
+}
+.favorite-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+.favorite-card {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: white;
+}
+.favorite-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.favorite-card-top > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.favorite-card-top .design-icon {
+  width: 16px;
+  height: 16px;
+}
+.favorite-card-top button {
+  border: 0;
+  background: #f2f6f1;
+  font-size: 21px;
+}
+.favorite-use {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.favorite-card h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.favorite-card h3 button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.favorite-area {
+  margin: 12px 0 20px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.favorite-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 12px;
+}
+.favorite-price span {
+  font-size: 10px;
+  color: var(--muted);
+}
+.favorite-price strong {
+  font-size: 20px;
+  letter-spacing: -0.7px;
+}
+.favorite-card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.favorite-card-actions > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 600;
+}
+.favorite-card-actions > button .design-icon {
+  width: 16px;
+  height: 16px;
+}
+.favorites-footer {
+  padding: 18px 28px max(20px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  background: white;
+}
+.favorites-footer > button {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  color: var(--muted);
+  font-size: 12px;
+}
+.favorites-footer p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+  text-align: center;
+}
+.favorites-empty {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  padding: 60px 0;
+}
+.favorites-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 26px;
+  background: var(--design-sage);
+  transform: rotate(-8deg);
+}
+.favorites-empty-icon .design-icon {
+  width: 32px;
+  height: 32px;
+}
+.favorites-empty h3 {
+  margin: 28px 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+.favorites-empty p {
+  margin: 0 0 24px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.favorites-empty .button {
+  font-size: 12px;
+}
+.favorites-empty .button .design-icon {
+  filter: brightness(0) invert(1);
+  width: 18px;
+  height: 18px;
+}
+@media (max-width: 920px) {
+  .design-template .quick-results .side-column {
+    display: block;
+  }
+}
+@media (max-width: 600px) {
+  .favorites-dialog {
+    width: 100vw;
+    border-radius: 0;
+    border: 0;
+  }
+  .favorites-heading {
+    padding: 24px 20px 0;
+  }
+  .favorites-heading h2 {
+    font-size: 24px;
+  }
+  .favorites-intro {
+    margin-inline: 20px;
+  }
+  .favorites-scroll {
+    padding-inline: 20px;
+  }
+  .favorites-footer {
+    padding-inline: 20px;
   }
 }

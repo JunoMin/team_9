@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { areaPyeong, formatPrice, pricePerPyeong, suuiPayment } from '../lib/search'
-import { naverMapUrl } from '../lib/mapLink'
+import { MapLinks } from './MapLinks'
 import type { Land } from '../types/land'
 
 interface Props {
@@ -82,14 +82,7 @@ export function LotDetailDialog({ land, onClose }: Props) {
             ))}
           </dl>
           <div className="lot-detail-links">
-            <a href={naverMapUrl(land)} target="_blank" rel="noreferrer">
-              네이버 지도<span className="sr-only"> (새 창)</span> ↗
-            </a>
-            {land.suui?.lhMapUrl && (
-              <a href={land.suui.lhMapUrl} target="_blank" rel="noreferrer">
-                LH 내집어디 지도<span className="sr-only"> (새 창)</span> ↗
-              </a>
-            )}
+            <MapLinks land={land} />
             {land.detailUrl && (
               <a href={land.detailUrl} target="_blank" rel="noreferrer">
                 {land.source === 'lh-suui' ? 'LH 수의계약 전체 목록' : 'LH 공고 원문'}
